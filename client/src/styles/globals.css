@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Old Standard TT", "Georgia", "serif";
+  --font-heading: "Playfair Display", "serif";
+  --color-ink: "#1a1a1a";
+  --color-primary: #491901;
+  /* --color-secandary: #; */
+  --color-over-primary: #eee;
+  --color-sepia: "#f4ecd8";
+  --color-muted: "#737373";
+  --width-prose: "70ch";
+}
+
+@layer base {
+  h1 {
+    font-size: var(--text-2xl);
+  }
+  h2 {
+    font-size: var(--text-xl);
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading uppercase tracking-wide;
+  }
+  p {
+    @apply font-serif leading-relaxed text-lg;
+  }
+  a {
+    @apply underline hover:text-muted transition;
+  }
+  button,
+  a {
+    @apply cursor-pointer;
+  }
+}
