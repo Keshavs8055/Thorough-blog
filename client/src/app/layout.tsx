@@ -1,5 +1,6 @@
+import Toast from "@/components/common/toast";
+import Navbar from "@/components/navbar/navbar";
 import "@/styles/globals.css";
-
 import { EB_Garamond } from "next/font/google";
 
 const bodyFont = EB_Garamond({ subsets: ["latin"], weight: ["400", "700"] });
@@ -7,8 +8,6 @@ const bodyFont = EB_Garamond({ subsets: ["latin"], weight: ["400", "700"] });
 //   subsets: ["latin"],
 //   weight: ["400", "700"],
 // });
-
-export const metadata = { title: "Public Blog" };
 
 export default function RootLayout({
   children,
@@ -18,9 +17,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bodyFont.className} bg-amber-50`}
+      className={`${bodyFont.className} bg-gray-100`}
     >
-      <body className="bg-paper text-ink antialiased">{children}</body>
+      <body className="text-ink antialiased">
+        <Navbar />
+        <div className="">{children}</div>
+        <Toast />
+      </body>
     </html>
   );
 }

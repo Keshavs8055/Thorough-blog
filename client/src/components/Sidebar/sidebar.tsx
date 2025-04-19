@@ -1,65 +1,46 @@
-import Link from "next/link";
-
 export default function SidebarNav() {
   return (
-    <nav className=" border-l text-sm p-5 lg:max-w-[18rem] space-y-7 h-full">
-      <div className="lg:hidden text-center mb-6">
-        <h1 className="text-3xl font-black font-serif uppercase tracking-widest">
-          The Public Blog
-        </h1>
+    <aside className="text-sm p-6 space-y-10 h-full font-serif">
+      {/* Trending Section */}
+      <section>
+        <h2 className="text-lg font-bold uppercase mb-2 border-b border-black pb-1 tracking-wide">
+          Trending
+        </h2>
+        <ul className="list-disc list-inside space-y-2 text-sm">
+          <li className="hover:underline cursor-pointer">
+            How Public Blogs Are Changing Journalism
+          </li>
+          <li className="hover:underline cursor-pointer">
+            5 Ways Readers Are Shaping Content
+          </li>
+          <li className="hover:underline cursor-pointer">
+            The Return of Authentic Writing
+          </li>
+        </ul>
+      </section>
+
+      {/* Editor's Picks Section */}
+      <section>
+        <h2 className="text-lg font-bold uppercase mb-2 border-b border-black pb-1 tracking-wide">
+          {`Editor's Picks`}
+        </h2>
+        <ul className="list-disc list-inside space-y-2 text-sm">
+          <li className="hover:underline cursor-pointer">
+            Letters From the Internet Underground
+          </li>
+          <li className="hover:underline cursor-pointer">
+            Who Controls the Feed?
+          </li>
+          <li className="hover:underline cursor-pointer">
+            Writers vs. Algorithms
+          </li>
+        </ul>
+      </section>
+
+      {/* Quote */}
+      <div className="pt-4 border-t border-black italic text-muted text-sm">
+        “The pen is mightier than the algorithm.” — Anonymous Reader
       </div>
-      <ul className="space-y-3 font-medium uppercase font-serif">
-        <li>
-          <Link href="/">Home</Link>
-        </li>
-        <li>
-          <Link href="/categories">Categories</Link>
-        </li>
-        <li>
-          <Link href="/authors">Authors</Link>
-        </li>
-        <li>
-          <Link href="/login">Login</Link>
-        </li>
-      </ul>
-      <hr />
-      <div className="space-y-6 text-sm">
-        <div>
-          <h2 className="text-md font-bold uppercase mb-2 border-b pb-1">
-            Trending
-          </h2>
-          <ul className="space-y-2">
-            <li className="hover:underline cursor-pointer">
-              How Public Blogs Are Changing Journalism
-            </li>
-            <li className="hover:underline cursor-pointer">
-              5 Ways Readers Are Shaping Content
-            </li>
-            <li className="hover:underline cursor-pointer">
-              The Return of Authentic Writing
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h2 className="text-md font-bold uppercase mb-2 border-b pb-1">
-            {`Editor's Picks`}
-          </h2>
-          <ul className="space-y-2">
-            <li className="hover:underline cursor-pointer">
-              Letters From the Internet Underground
-            </li>
-            <li className="hover:underline cursor-pointer">
-              Who Controls the Feed?
-            </li>
-            <li className="hover:underline cursor-pointer">
-              Writers vs. Algorithms
-            </li>
-          </ul>
-        </div>
-        <div className="pt-4 border-t italic text-muted text-sm">
-          “The pen is mightier than the algorithm.” — Anonymous Reader
-        </div>
-      </div>
-    </nav>
+    </aside>
   );
 }

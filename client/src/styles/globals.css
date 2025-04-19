@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@plugin "@tailwindcss/typography";
 @theme {
   --font-serif: "Old Standard TT", "Georgia", "serif";
   --font-heading: "Playfair Display", "serif";
@@ -7,6 +7,7 @@
   --color-primary: #491901;
   /* --color-secandary: #; */
   --color-over-primary: #eee;
+  --color-paper: "4caf50";
   --color-sepia: "#f4ecd8";
   --color-muted: "#737373";
   --width-prose: "70ch";
