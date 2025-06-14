@@ -6,6 +6,6 @@ export const createAuthCookie = (token: string) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };

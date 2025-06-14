@@ -1,13 +1,12 @@
 import { create } from "zustand";
-import { AuthUser } from "@/utils/types";
+import { CompleteUser } from "@/utils/types";
 
 type AuthState = {
   isLoggedIn: boolean;
-  user: AuthUser | null;
-  token: string | null;
-  login: (user: AuthUser, token: string) => void;
+  user: CompleteUser | null;
+  login: (user: CompleteUser) => void;
   logout: () => void;
-  setUser: (user: AuthUser) => void;
+  setUser: (user: CompleteUser) => void;
 };
 
 export const useAuth = create<AuthState>((set) => ({
@@ -15,19 +14,20 @@ export const useAuth = create<AuthState>((set) => ({
   user: null,
   token: null,
 
-  login: (user, token) =>
+  login: (user) =>
     set({
       isLoggedIn: true,
       user,
-      token,
     }),
 
-  logout: () =>
+  logout: () => {
     set({
       isLoggedIn: false,
       user: null,
-      token: null,
-    }),
+    });
+  },
 
-  setUser: (user) => set(() => ({ user })),
+  setUser: (user) => {
+    set(() => ({ user }));
+  },
 }));

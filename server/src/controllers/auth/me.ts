@@ -7,7 +7,6 @@ import { IUser } from "../../types";
 
 export const getCurrentUser = catchAsync(async (req, res) => {
   const user = req.user;
-  console.log(req.user);
 
   if (!user) {
     return res.status(401).json({

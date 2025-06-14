@@ -15,8 +15,6 @@ export interface IPost extends Document {
   image?: {
     src: string;
     alt: string;
-    caption?: string;
-    source?: string;
   };
   pullQuotes?: string[];
   subheadings?: string[];
@@ -24,6 +22,7 @@ export interface IPost extends Document {
     title: string;
     href: string;
   }[];
+  tags: string[];
 }
 
 export enum userRoles {
@@ -53,7 +52,6 @@ export interface IUser extends Document {
 
 export interface IAuthor {
   bio: string;
-  avatar?: string;
   socialMedia?: {
     website?: string;
     twitter?: string;

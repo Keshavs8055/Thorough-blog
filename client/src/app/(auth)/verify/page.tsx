@@ -35,7 +35,7 @@ export default function VerifyEmailPage() {
 
       const result = await verifyEmail(token, email);
       if (result.success && result.user && result.token) {
-        login(result.user, result.token);
+        login(result.user);
         showToast("Email verified successfully!", "success");
         setStatus("success");
         setMessage("Redirecting to your dashboard...");

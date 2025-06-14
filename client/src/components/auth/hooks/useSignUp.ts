@@ -10,6 +10,7 @@ export const useSignup = () => {
 
   const handleSignup = async (form: SignupFormState) => {
     setLoading(true);
+
     const result = await userSignUp(form);
 
     if (result.success) {

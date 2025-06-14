@@ -8,7 +8,6 @@ import {
   User,
   LogIn,
   Grid,
-  Info,
   Mail,
   TrendingUp,
 } from "lucide-react";
@@ -32,7 +31,7 @@ interface IDesktopNav {
 
 // Desktop navigation component
 const DesktopNav = ({ navItems, authNavItem, pathname }: IDesktopNav) => (
-  <div className="hidden lg:flex items-center space-x-4">
+  <div className="hidden lg:flex items-center space-x-2 max-w-3xl ">
     {navItems.map((item) => (
       <NavItem
         key={item.name}
@@ -60,7 +59,6 @@ export default function Navbar() {
     { name: "Categories", href: "/categories", icon: <Grid size={20} /> },
     { name: "Authors", href: "/authors", icon: <PenTool size={20} /> },
     { name: "Featured", href: "/featured", icon: <TrendingUp size={20} /> },
-    { name: "About", href: "/about", icon: <Info size={20} /> },
     { name: "Contact", href: "/contact", icon: <Mail size={20} /> },
   ];
 
@@ -71,7 +69,7 @@ export default function Navbar() {
   // Track scrolling effect
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      setScrolled(window.scrollY > 100);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -93,32 +91,28 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 w-full z-50 font-serif ${
-          scrolled ? "bg-white shadow-md" : "bg-transparent"
+        className={`sticky max-w-screen top-0 left-0 w-full z-50 font-serif border-b border-gray-300 ${
+          scrolled ? "bg-[#f9f6f1] shadow-md" : "bg-[#f9f6f1]"
         } transition-all duration-300`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2">
+          <div className="flex justify-between items-center h-20">
             <Logo />
 
-            {/* Desktop Navigation */}
             <DesktopNav
               navItems={navItems}
               authNavItem={authNavItem}
               pathname={pathname}
             />
-
-            {/* Mobile menu button */}
             <div className="lg:hidden flex items-center">
               <MenuButton setIsOpen={setIsOpen} />
             </div>
           </div>
         </div>
 
-        {/* Mobile menu */}
         <MobileMenu
           isOpen={isOpen}
           setIsOpen={setIsOpen}
@@ -127,8 +121,6 @@ export default function Navbar() {
           pathname={pathname}
         />
       </motion.nav>
-      {/* Spacer for fixed navbar */}
-      <div className="h-16"></div>
     </>
   );
 }

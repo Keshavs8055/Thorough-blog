@@ -28,7 +28,7 @@ export default function Toast() {
             <div>
               <Link
                 href={`${link.link}`}
-                className="underline"
+                className="no-underline hover:underline"
               >
                 {link.label}
               </Link>

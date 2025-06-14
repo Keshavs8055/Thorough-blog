@@ -4,6 +4,20 @@ import Link from "next/link";
 import { Dispatch, SetStateAction } from "react";
 
 // Logo component
+// export const Logo = () => (
+//   <motion.div
+//     className="flex-shrink-0 flex items-center"
+//     whileHover={{ scale: 1.05 }}
+//     transition={{ type: "spring", stiffness: 400, damping: 10 }}
+//   >
+//     <Link
+//       href="/"
+//       className="flex items-center"
+//     >
+//       <span className="text-xl font-bold tracking-wide">THE PUBLIC BLOG</span>
+//     </Link>
+//   </motion.div>
+// );
 export const Logo = () => (
   <motion.div
     className="flex-shrink-0 flex items-center"
@@ -12,9 +26,11 @@ export const Logo = () => (
   >
     <Link
       href="/"
-      className="flex items-center"
+      className="flex items-center no-underline hover:underline"
     >
-      <span className="text-xl font-bold tracking-wide">THE PUBLIC BLOG</span>
+      <span className="text-2xl font-serif font-extrabold tracking-widest uppercase text-black">
+        The Public Blog
+      </span>
     </Link>
   </motion.div>
 );
@@ -32,14 +48,15 @@ export const NavItem = ({ item, pathname, onClick = () => {} }: INavItem) => (
   <Link
     href={item.href}
     onClick={onClick}
+    className="no-underline hover:underline"
   >
     <motion.div
-      className={`px-3 py-2 text-sm font-medium rounded-md flex items-center ${
+      className={`px-4 py-2 text-sm font-serif uppercase tracking-wide border-b-2 transition-all duration-200 ${
         pathname === item.href
-          ? "text-black bg-gray-100 font-bold"
-          : "text-gray-600 hover:text-black hover:bg-gray-50"
+          ? "text-black border-black"
+          : "text-gray-600 border-transparent hover:text-black hover:border-gray-500"
       }`}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.95 }}
     >
       {item.name}

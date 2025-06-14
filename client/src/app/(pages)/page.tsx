@@ -115,7 +115,7 @@ export default function HomePage() {
 
   return (
     <Layout>
-      <div className="space-y-6 md:p-20">
+      <div className="space-y-6 xl:p-20 py-20">
         {posts.map((post, i) => (
           <motion.div
             key={i}

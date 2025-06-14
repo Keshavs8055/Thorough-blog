@@ -135,7 +135,7 @@ export default function LoginForm() {
 
       <Link
         href="/signup"
-        className="block"
+        className="block no-underline"
       >
         <button
           type="button"

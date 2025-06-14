@@ -11,6 +11,7 @@
   --color-sepia: "#f4ecd8";
   --color-muted: "#737373";
   --width-prose: "70ch";
+  --font-serif: '"Playfair Display"', "Georgia", "serif";
 }
 
 @layer base {

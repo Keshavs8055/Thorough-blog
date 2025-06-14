@@ -3,14 +3,30 @@ import { requireAuth } from "../middlewares/authMiddleware";
 import { getCurrentUser, getDetailedUserProfile } from "../controllers/auth/me";
 import { requireVerified } from "../middlewares/requireVerified";
 import { requestAuthor } from "../controllers/user/requestAuthor";
+import uploadMiddleware from "../middlewares/uploadMiddleware";
+import { editUserProfile } from "../controllers/user/editUserProfile";
 
 const userRoutes = express.Router();
+const upload = uploadMiddleware("avatar");
 
 userRoutes.get("/me", requireAuth, getCurrentUser);
-userRoutes.get("/profile/:profileId", requireAuth, getDetailedUserProfile);
-userRoutes.post("/upgrade", requireAuth, requireVerified, requestAuthor);
+userRoutes.get("/:profileId", requireAuth, getDetailedUserProfile);
 
-// /user/requestAuthor - requireAuth, requireVerified
+userRoutes.post(
+  "/upgrade",
+  requireAuth,
+  requireVerified,
+  upload.single("image"),
+  requestAuthor
+);
+
+userRoutes.put(
+  "/edit-profile",
+  requireAuth,
+  requireVerified,
+  upload.single("image"),
+  editUserProfile
+);
 // /posts/create - requireAuth, requireRole(['author'])
 
 export default userRoutes;

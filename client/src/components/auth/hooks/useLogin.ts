@@ -21,7 +21,7 @@ export const useLogin = () => {
       result = await userLogin(form as LoginFormState);
       if (result.success && result.user && result.token) {
         showToast("Login successful!", "success");
-        login(result.user, result.token);
+        login(result.user);
       } else {
         showToast(result.message || "Login failed!", "error");
       }

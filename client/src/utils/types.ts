@@ -29,6 +29,9 @@ export interface Post {
   pullQuotes?: string[];
   subheadings?: string[];
   relatedArticles?: RelatedArticle[];
+  likeCount: number;
+  tags: string[];
+  likes?: string[];
 }
 
 export type SignupFormState = {
@@ -36,6 +39,7 @@ export type SignupFormState = {
   username: string;
   email: string;
   password: string;
+  image?: File | null;
 };
 
 export type LoginFormState = {
@@ -43,11 +47,86 @@ export type LoginFormState = {
   password: string;
 };
 
-export type AuthUser = {
+export interface AuthUser extends CompleteUser {
   id: string;
   name: string;
   username: string;
   email: string;
   avatar?: string;
-  role: "user" | "admin" | "author";
+}
+
+// export interface CompleteUser {
+//   name: string;
+//   username: string;
+//   email: string;
+//   avatar?: string;
+//   role: "user" | "pending-author" | "author";
+//   isAuthor: boolean; // ADD TO FRONTEND
+//   authorProfile?: IAuthor;
+//   id: string;
+// }
+
+// export interface IAuthor {
+//   bio: string;
+//   avatar?: string;
+//   socialMedia?: {
+//     website?: string;
+//     twitter?: string;
+//     linkedin?: string;
+//     // Add other relevant social media platforms
+//   };
+//   expertise: string[];
+// }
+
+export interface CompleteUser {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  role: "user" | "pending-author" | "author";
+  isAuthor: boolean;
+  authorProfile: IAuthor; // not optional anymore
+}
+
+export interface IAuthor {
+  bio: string;
+  expertise: string[];
+  socialMedia: {
+    website?: string;
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+  };
+  avatar?: string;
+}
+
+export type AuthorRequestForm = {
+  bio: string;
+  avatar?: File | null;
+  website?: string;
+  twitter?: string;
+  linkedin?: string;
+  expertise: string[];
+  error: {
+    avatar: boolean;
+    bio: boolean;
+    expertise: boolean;
+    website: boolean;
+    twitter: boolean;
+    linkedin: boolean;
+  };
 };
+
+export const presetExpertise = [
+  "Technology",
+  "Science",
+  "Health",
+  "Finance",
+  "Politics",
+  "Education",
+  "Travel",
+  "Fashion",
+  "Sports",
+  "History",
+];

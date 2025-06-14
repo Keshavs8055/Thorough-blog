@@ -1,6 +1,6 @@
-import Post from "../models/post";
+import Post from "../../models/post";
 import { Request, Response } from "express";
-import { catchAsync } from "../utils/catchAsync";
+import { catchAsync } from "../../utils/catchAsync";
 
 export const getAllPosts = catchAsync(async (req: Request, res: Response) => {
   // Get page and limit from query params (default: page 1, 10 posts per page)
@@ -10,7 +10,7 @@ export const getAllPosts = catchAsync(async (req: Request, res: Response) => {
 
   // Project only the fields you need
   const posts = await Post.find()
-    .select("title summary image author _id date") // 👈 limit fields
+    .select("title summary image author _id date likeCount tags") // 👈 limit fields
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 }); // Optional: latest first
@@ -42,21 +42,6 @@ export const getPostById = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-// Create a post
-export const createPost = catchAsync(async (req: Request, res: Response) => {
-  try {
-    const newPost = new Post(req.body);
-    await newPost.save();
-    res.status(201).json({
-      success: true,
-      message: "Successfuly Retrieved Post",
-      data: newPost,
-    });
-  } catch (err) {
-    res.status(400).json({ success: false, error: "Failed to create post" });
-  }
-});
-
 //Like post
 export const LikePost = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -69,6 +54,9 @@ export const LikePost = catchAsync(async (req: Request, res: Response) => {
   const alreadyLiked = post.likes.includes(userId);
 
   if (alreadyLiked) {
+    console.log("Already liked");
+    console.log(post.likes.filter((id: string) => id !== userId));
+
     post.likes = post.likes.filter((id: string) => id !== userId);
   } else {
     post.likes.push(userId);

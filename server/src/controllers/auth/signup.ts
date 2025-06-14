@@ -8,9 +8,18 @@ import sendVerificationEmail from "../../utils/auth/sendVerifyMail";
 import { userRoles } from "../../types";
 
 export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
-  const { name, username, email, password } = req.body;
+  const {
+    name,
+    username,
+    email,
+    password,
+    bio,
+    website,
+    twitter,
+    linkedin,
+    expertise,
+  } = req.body;
   const isAuthor = req.body.isAuthor || false;
-  console.log(req.body);
 
   if (!name || !username || !email || !password) {
     return res.status(400).json({
@@ -30,13 +39,20 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
+  // Handle avatar image (if uploaded)
+  const avatarFile = req.file as Express.Multer.File;
+  const avatar = avatarFile
+    ? {
+        url: (avatarFile as any).path, // Cloudinary URL
+        label: username,
+      }
+    : undefined;
+  console.log("AVATAR", avatar, "FILE", avatarFile);
+
   const { rawToken, hashed, expiresAt } = generateVerificationToken();
 
   let userRole: userRoles = userRoles.USER;
-
-  if (isAuthor) {
-    userRole = userRoles.PENDING;
-  }
+  if (isAuthor) userRole = userRoles.PENDING;
 
   const newUser = await User.create({
     name,
@@ -48,16 +64,16 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     isVerified: false,
     role: userRole,
     isAuthor,
+    avatar: avatar?.url, // for non-authors
     ...(isAuthor && {
       authorProfile: {
-        bio: req.body.bio, // Assuming you send bio from the author signup form
-        avatar: req.body.avatar, // Assuming you send avatar
+        bio,
         socialMedia: {
-          website: req.body.website,
-          twitter: req.body.twitter,
-          linkedin: req.body.linkedin,
+          website,
+          twitter,
+          linkedin,
         },
-        expertise: req.body.expertise,
+        expertise,
       },
     }),
   });

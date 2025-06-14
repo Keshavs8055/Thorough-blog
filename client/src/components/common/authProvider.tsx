@@ -4,30 +4,30 @@ import { useEffect, useState } from "react";
 import { fetchUser } from "@/lib/api";
 import { useAuth } from "@/utils/authStore";
 import { Spinner } from "@/components/common/spinner";
-import { redirect } from "next/navigation";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { login, isLoggedIn } = useAuth();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      redirect("/");
-    }
     const init = async () => {
-      const result = await fetchUser();
-      console.log("PROVIDER", result);
+      try {
+        const result = await fetchUser();
 
-      if (result.success && result.user && result.token) {
-        login(result.user, result.token);
-      } else {
-        console.warn(result.message || "User not logged in");
+        if (result.success && result.user) {
+          login(result.user); // token is optional
+        }
+      } catch (e) {
+        console.log(e);
+
+        console.warn("User not logged in or token expired");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     init();
-  }, [login, isLoggedIn]);
+  }, [login]);
 
   if (loading) return <Spinner />;
   return <>{children}</>;

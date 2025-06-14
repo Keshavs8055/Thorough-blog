@@ -4,84 +4,79 @@ import { Post } from "@/utils/types";
 import Link from "next/link";
 
 export default function PostCard({ post }: { post: Post }) {
-  const { _id, image, title, author, date, summary } = post;
+  const { _id, image, title, author, date, summary, likeCount, tags } = post;
 
   return (
-    <article
-      className="border-b pb-8 mb-10 py-5 m-5 lg:m-0 font-serif"
-      style={{ fontFamily: "var(--font-serif)" }}
-    >
-      <Link href={`/posts/${_id}`}>
-        <div className="flex flex-col lg:flex-row gap-6 group cursor-pointer">
+    <article className="border-b border-dashed border-neutral-400 pb-10 mb-12 px-4 sm:px-8 font-serif  rounded-sm">
+      <Link
+        href={`/posts/${_id}`}
+        className="group block no-underline"
+      >
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Image */}
           {image?.src && (
-            <div className="lg:w-1/3">
+            <div className="lg:w-[30%]">
               <img
                 src={image.src}
                 alt={image.alt}
-                className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition duration-300 rounded"
+                className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition duration-300 border border-neutral-400"
               />
             </div>
           )}
 
           {/* Text Content */}
-          <div className="flex flex-col justify-between lg:w-2/3">
+          <div className="flex flex-col justify-between lg:w-[70%]">
             <h2
-              className="text-2xl font-bold leading-tight group-hover:underline"
+              className="text-2xl md:text-3xl font-bold tracking-tight leading-tight group-hover:underline"
               style={{
                 fontFamily: "var(--font-heading)",
                 color: "var(--color-ink)",
               }}
             >
-              {title}
+              {title.toUpperCase()}
             </h2>
 
             {/* Author and Date */}
-            <div
-              className="text-sm italic mt-2"
-              style={{ color: "var(--color-muted)" }}
-            >
+            <div className="text-sm italic mt-3 text-neutral-600">
               By{" "}
-              <span
-                className="underline"
-                style={{ color: "var(--color-primary)" }}
-              >
+              <span className=" text-[var(--color-primary)] font-medium">
                 {author.name}
               </span>{" "}
-              • {new Date(date).toLocaleDateString()}
+              &nbsp;•&nbsp;{" "}
+              <span className="tracking-wider font-mono text-xs">
+                {new Date(date).toLocaleDateString()}
+              </span>
             </div>
 
             {/* Summary */}
-            <p
-              className="text-base mt-4 leading-relaxed line-clamp-3"
-              style={{ color: "var(--color-ink)" }}
-            >
+            <p className="mt-4 text-base leading-relaxed text-neutral-800">
               {summary}
             </p>
 
             {/* Read More */}
-            <div className="mt-4">
-              <span
-                className="inline-block rounded-full px-3 py-1 text-sm font-semibold cursor-pointer transition duration-200"
-                style={{
-                  backgroundColor: "var(--color-sepia)",
-                  color: "var(--color-primary)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "var(--color-primary)";
-                  e.currentTarget.style.color = "var(--color-over-primary)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--color-sepia)";
-                  e.currentTarget.style.color = "var(--color-primary)";
-                }}
-              >
+            <div className="mt-6 flex justify-between items-center">
+              <span className="text-sm uppercase tracking-widest text-[var(--color-primary)] hover:underline  py-2 rounded transition duration-300">
                 Read More →
               </span>
             </div>
           </div>
         </div>
+        {tags && tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2 items-center justify-between text-neutral-600">
+            <div>
+              {tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/tags/${encodeURIComponent(tag)}`}
+                  className="px-2 py-1 text-xs bg-neutral-100 rounded-full text-neutral-700 hover:bg-[var(--color-primary)] hover:text-white transition duration-200 no-underline hover:underline"
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
+            <span className="">{likeCount}</span>
+          </div>
+        )}
       </Link>
     </article>
   );
