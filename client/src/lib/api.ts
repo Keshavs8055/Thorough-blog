@@ -215,3 +215,31 @@ export const updateUserProfile = async (
     })
   );
 };
+
+export const searchPosts = async (
+  q: string,
+  page = 1,
+  limit = 10
+): Promise<ApiResponse> => {
+  return handleRequest(
+    api.get(
+      `/api/search/searchPosts?q=${encodeURIComponent(
+        q
+      )}&page=${page}&limit=${limit}`
+    )
+  );
+};
+
+export const searchPostsByTag = async (
+  q: string,
+  page = 1,
+  limit = 10
+): Promise<ApiResponse> => {
+  return handleRequest(
+    api.get(
+      `/api/search/searchPosts?q=${encodeURIComponent(
+        q
+      )}&page=${page}&limit=${limit}`
+    )
+  );
+};

@@ -41,5 +41,14 @@ const PostSchema = new Schema<IPost>(
   }
 );
 
+PostSchema.index(
+  {
+    title: "text",
+    summary: "text",
+    tags: "text",
+  },
+  { weights: { title: 5, summary: 3, tags: 1 } }
+);
+
 export default mongoose.models.Post ||
   mongoose.model<IPost>("Post", PostSchema);

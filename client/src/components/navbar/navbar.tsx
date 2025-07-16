@@ -12,7 +12,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/utils/authStore";
-import { Logo, MenuButton, NavItem, SearchButton } from "./navUtils";
+import { Logo, MenuButton, NavItem } from "./navUtils";
 import { MobileMenu } from "./mobileMenu";
 
 interface IDesktopNav {
@@ -43,7 +43,6 @@ const DesktopNav = ({ navItems, authNavItem, pathname }: IDesktopNav) => (
       item={authNavItem}
       pathname={pathname}
     />
-    <SearchButton />
   </div>
 );
 

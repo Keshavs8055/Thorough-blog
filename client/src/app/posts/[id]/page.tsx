@@ -4,7 +4,7 @@ import { fetchPostById } from "@/lib/api";
 import { redirect } from "next/navigation";
 
 export default async function PostPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+  const { id } = await params;
   const response = await fetchPostById(id);
 
   // Check if the response was successful and has data

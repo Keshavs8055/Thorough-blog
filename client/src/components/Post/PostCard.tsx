@@ -1,5 +1,6 @@
 "use client";
 
+import { stripHtmlAndTrim } from "@/lib/utils";
 import { Post } from "@/utils/types";
 import Link from "next/link";
 
@@ -8,8 +9,8 @@ export default function PostCard({ post }: { post: Post }) {
 
   return (
     <article className="border-b border-dashed border-neutral-400 pb-10 mb-12 px-4 sm:px-8 font-serif  rounded-sm">
-      <Link
-        href={`/posts/${_id}`}
+      <div
+        // href={`/posts/${_id}`}
         className="group block no-underline"
       >
         <div className="flex flex-col lg:flex-row gap-6">
@@ -50,14 +51,17 @@ export default function PostCard({ post }: { post: Post }) {
 
             {/* Summary */}
             <p className="mt-4 text-base leading-relaxed text-neutral-800">
-              {summary}
+              {stripHtmlAndTrim(summary, 500)}
             </p>
 
             {/* Read More */}
             <div className="mt-6 flex justify-between items-center">
-              <span className="text-sm uppercase tracking-widest text-[var(--color-primary)] hover:underline  py-2 rounded transition duration-300">
+              <a
+                href={`/posts/${_id}`}
+                className="text-sm uppercase tracking-widest text-[var(--color-primary)] hover:underline  py-2 rounded transition duration-300"
+              >
                 Read More →
-              </span>
+              </a>
             </div>
           </div>
         </div>
@@ -77,7 +81,7 @@ export default function PostCard({ post }: { post: Post }) {
             <span className="">{likeCount}</span>
           </div>
         )}
-      </Link>
+      </div>
     </article>
   );
 }

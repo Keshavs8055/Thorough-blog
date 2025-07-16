@@ -1,6 +1,7 @@
 "use client";
 import { likePost } from "@/lib/api";
 import { useAuth } from "@/utils/authStore";
+import { useToast } from "@/utils/toast";
 import { Post } from "@/utils/types";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import Image from "next/image";
@@ -11,19 +12,28 @@ export default function SinglePost({ post }: { post: Post }) {
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [liked, setLiked] = useState(false);
   const user = useAuth((state) => state.user);
+  const isLoggedIn = useAuth((state) => state.isLoggedIn);
+  const { showToast } = useToast();
 
   useEffect(() => {
-    if (user && post.likes && post.likes.includes(user?.id)) {
+    if (user && post.likes?.includes(user.id)) {
       setLiked(true);
     }
-  }, [user, liked]);
+  }, [user, post.likes]);
 
   const handleLike = async () => {
+    if (!isLoggedIn) {
+      showToast("Please login to like this post.", "error", {
+        label: "Login?",
+        link: "/login",
+      });
+      return;
+    }
+
     if (!post._id) return;
+
     try {
       const res = await likePost(post._id);
-      console.log(res);
-
       if (res.success && res.likes !== undefined) {
         setLikeCount(res.likes);
         setLiked((prev) => !prev);
@@ -32,6 +42,7 @@ export default function SinglePost({ post }: { post: Post }) {
       console.error("Failed to like the post", err);
     }
   };
+
   return (
     <article
       className="font-serif max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8"
@@ -220,7 +231,6 @@ export default function SinglePost({ post }: { post: Post }) {
           </div>
         )}
 
-        {/* Likes Section */}
         <div className="mt-4 flex items-center gap-2">
           <span
             className="text-sm tracking-widest text-gray-700"
@@ -231,9 +241,11 @@ export default function SinglePost({ post }: { post: Post }) {
             Likes: {likeCount}
           </span>
           <button
-            className={`flex justify-around items-center border border-gray-700 px-2 py-1 rounded hover:bg-neutral-100 transition-all duration-200 text-gray-800 hover:border-black ${
-              liked ? "bg-primary text-white hover:text-black" : ""
-            }`}
+            className={`flex justify-around items-center border border-gray-700 px-2 py-1 rounded transition-all duration-200 text-gray-800 ${
+              liked
+                ? "bg-primary text-white hover:text-black hover:border-black"
+                : "hover:bg-neutral-100 hover:border-black"
+            } `}
             style={{
               fontFamily: "'Playfair Display', serif",
             }}
