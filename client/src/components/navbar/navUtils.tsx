@@ -11,11 +11,12 @@ export const Logo = () => (
   >
     <Link
       href="/"
-      className="flex items-center no-underline hover:underline"
+      className="flex flex-col items-center xl:items-baseline xl:flex-row no-underline hover:underline"
     >
       <span className="text-2xl font-serif font-extrabold tracking-widest uppercase text-black">
-        The Public Blog
-      </span>
+        Thorough
+      </span>{" "}
+      <span className="font-extralight ms-1 font-sans">A blog Application</span>
     </Link>
   </motion.div>
 );
@@ -36,9 +37,9 @@ export const NavItem = ({ item, pathname, onClick = () => {} }: INavItem) => (
     className="no-underline hover:underline"
   >
     <motion.div
-      className={`px-4 py-2 text-sm font-serif uppercase tracking-wide border-b-2 transition-all duration-200 ${
+      className={`px-4 py-2 text-sm font-serif uppercase tracking-wide  transition-all duration-200 ${
         pathname === item.href
-          ? "text-black border-black"
+          ? "text-white bg-gray-700 rounded-xl"
           : "text-gray-600 border-transparent hover:text-black hover:border-gray-500"
       }`}
       whileHover={{ scale: 1.03 }}

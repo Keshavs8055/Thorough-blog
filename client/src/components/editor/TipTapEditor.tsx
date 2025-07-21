@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Editor, EditorContent } from "@tiptap/react";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Heading from "@tiptap/extension-heading";
 import Image from "@tiptap/extension-image";
 import TiptapToolbar from "./toolbar";
+import Heading from "@tiptap/extension-heading";
 import Blockquote from "@tiptap/extension-blockquote";
 
 interface Props {
@@ -19,27 +18,20 @@ export default function TiptapEditor({
   onEditorChange,
   onContentChange,
 }: Props) {
-  const [editor, setEditor] = useState<Editor | null>(null);
+  const editor = useEditor({
+    content,
+    extensions: [
+      StarterKit,
+      Heading.configure({ levels: [1, 2, 3] }),
+      Image,
+      Blockquote,
+    ],
+    onUpdate: ({ editor }) => onContentChange(editor.getHTML()),
+  });
 
-  useEffect(() => {
-    const tiptap = new Editor({
-      content,
-      extensions: [
-        StarterKit,
-        Heading.configure({ levels: [1, 2, 3] }),
-        Image,
-        Blockquote,
-      ],
-      onUpdate: ({ editor }) => onContentChange(editor.getHTML()),
-    });
-
-    setEditor(tiptap);
-    if (onEditorChange) {
-      onEditorChange(tiptap);
-    }
-
-    return () => tiptap.destroy();
-  }, []);
+  if (editor && onEditorChange) {
+    onEditorChange(editor);
+  }
 
   return (
     <div className="space-y-2">

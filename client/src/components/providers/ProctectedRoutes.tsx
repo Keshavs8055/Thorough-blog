@@ -22,7 +22,7 @@ export default function ProtectedRoute({
     } else if (!allowedRoles.includes(user.role)) {
       router.push("/unauthorized"); // or redirect to home
     }
-  }, [isLoggedIn, user]);
+  }, [isLoggedIn, user, allowedRoles, router]);
 
   if (!user) return <Spinner />;
 

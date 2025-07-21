@@ -47,7 +47,7 @@ export const useInfinitePosts = ({
     } finally {
       setLoading(false);
     }
-  }, [query, page, loading, hasMore]);
+  }, [query, page, loading, hasMore, limit, fetchFn, showToast]);
 
   // Observer logic
   useEffect(() => {

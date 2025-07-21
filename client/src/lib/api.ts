@@ -81,15 +81,29 @@ export const fetchPostById = async (id: string): Promise<ApiResponse<Post>> => {
   );
 };
 
+// export const userSignUp = async (
+//   formData: SignupFormState
+// ): Promise<ApiResponse> => {
+//   return handleRequest(
+//     axios.post(`${API_URL}/api/auth/signup`, formData, {
+//       headers: {
+//         "Content-Type": "multipart/form-data",
+//       },
+//     })
+//   );
+// };
+// export const userLogin = async (form: LoginFormState): Promise<ApiResponse> => {
+//   return handleRequest(api.post("/api/auth/login", form));
+// };
+
 export const userSignUp = async (formData: FormData): Promise<ApiResponse> => {
   return handleRequest(
     axios.post(`${API_URL}/api/auth/signup`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     })
   );
 };
+
 export const userLogin = async (form: LoginFormState): Promise<ApiResponse> => {
   return handleRequest(api.post("/api/auth/login", form));
 };
@@ -101,8 +115,6 @@ export const fetchUser = async (): Promise<ApiResponse> => {
 export const fetchCompleteUserData = async (
   id: string
 ): Promise<ApiResponse> => {
-  console.log(id);
-
   return handleRequest(api.get(`/api/user/${id}`));
 };
 
@@ -189,25 +201,26 @@ export const updateUserProfile = async (
   formData.append("authorProfile[bio]", form.authorProfile.bio);
   if (form.newImage) formData.append("image", form.newImage);
   if (form.name) formData.append("name", form.name);
-  if (form.authorProfile.socialMedia.website)
+  if (form.isAuthor && form.authorProfile.socialMedia.website)
     formData.append(
       "authorProfile[socialMedia][website]",
       form.authorProfile.socialMedia.website
     );
-  if (form.authorProfile.socialMedia.twitter)
+  if (form.isAuthor && form.authorProfile.socialMedia.twitter)
     formData.append(
       "authorProfile[socialMedia][twitter]",
       form.authorProfile.socialMedia.twitter
     );
-  if (form.authorProfile.socialMedia.linkedin)
+  if (form.isAuthor && form.authorProfile.socialMedia.linkedin)
     formData.append(
       "authorProfile[socialMedia][linkedin]",
       form.authorProfile.socialMedia.linkedin
     );
-  form.authorProfile.expertise.forEach((tag, index) => {
-    formData.append(`authorProfile[expertise][${index}]`, tag);
-  });
-  console.log("IN REQUEST", formData);
+  if (form.isAuthor) {
+    form.authorProfile.expertise.forEach((tag, index) => {
+      formData.append(`authorProfile[expertise][${index}]`, tag);
+    });
+  }
 
   return handleRequest(
     axios.put(`${API_URL}/api/user/edit-profile`, formData, {

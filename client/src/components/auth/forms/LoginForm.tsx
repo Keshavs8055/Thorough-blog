@@ -1,75 +1,11 @@
-// // components/LoginForm.tsx
-// "use client";
-
-// import Link from "next/link";
-// import { useState } from "react";
-// import { LoginFormState } from "@/utils/types";
-// import { useLogin } from "../hooks/useLogin";
-// import { FormField } from "./FormField"; // Adjust path
-
-// const initialFormState: LoginFormState = {
-//   email: "",
-//   password: "",
-// };
-
-// export default function LoginForm() {
-//   const [form, setForm] = useState(initialFormState);
-//   const { loading, handleAuth } = useLogin();
-
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-//     setForm((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     await handleAuth(form, true); // Pass true for isLogin
-//   };
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit}
-//       className="space-y-5"
-//     >
-//       <FormField
-//         label="Email"
-//         name="email"
-//         type="email"
-//         value={form.email}
-//         onChange={handleChange}
-//       />
-//       <FormField
-//         label="Password"
-//         name="password"
-//         type="password"
-//         value={form.password}
-//         onChange={handleChange}
-//       />
-//       <button
-//         type="submit"
-//         disabled={loading}
-//         className="w-full py-2 bg-black text-white hover:bg-gray-800 transition-colors rounded-md"
-//       >
-//         {loading ? "Logging in..." : "Login"}
-//       </button>
-//       <Link href="/signup">
-//         <button
-//           type="button"
-//           className="w-full py-2 border border-black text-black hover:bg-black hover:text-white transition-colors rounded-md"
-//         >
-//           {`Don't have an account? Sign Up`}
-//         </button>
-//       </Link>
-//     </form>
-//   );
-// }
+// ./loginForm.tsx
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { LoginFormState } from "@/utils/types";
-import { useLogin } from "../hooks/useLogin";
 import { FormField } from "./FormField"; // Adjust path if needed
+import { useLogin } from "../hooks/useAuth";
 
 const initialFormState: LoginFormState = {
   email: "",
@@ -91,7 +27,7 @@ export default function LoginForm() {
     e.preventDefault();
     const res = await handleAuth(form, true); // true = login
     if (!res.success) {
-      setError(res.message || "Unexpected Error Occured");
+      setError("Unexpected Error Occured");
     }
   };
 

@@ -48,7 +48,7 @@ export default function VerifyEmailPage() {
     };
 
     verify();
-  }, [token, email]);
+  }, [token, email, router, login, showToast, isLoggedIn]);
 
   return (
     <div className="flex items-center justify-center h-[80vh] text-center px-4">

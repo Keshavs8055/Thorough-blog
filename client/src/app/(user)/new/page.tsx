@@ -5,6 +5,9 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/utils/toast";
 import { createPost } from "@/lib/api";
+import Image from "next/image";
+import { useAuth } from "@/utils/authStore";
+
 const TiptapEditor = dynamic(() => import("@/components/editor/TipTapEditor"), {
   ssr: false,
 });
@@ -28,18 +31,23 @@ export default function NewPostPage() {
   const [body, setBody] = useState("<p>Start writing your story...</p>");
   const [loading, setLoading] = useState(false);
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  // Restore from draft
+  const user = useAuth((state) => state.user);
   useEffect(() => {
+    if (!user?.isAuthor) {
+      showToast("You must be an author to create posts.", "error");
+      router.push("/");
+      return;
+    }
     const postData = localStorage.getItem(DRAFT_KEY);
     if (postData) {
       const { title, body } = JSON.parse(postData);
+      console.log(title, body);
+
       setForm((prev) => ({ ...prev, title }));
-      setBody(body || "<p>Start writing your story...</p>");
+      setBody(body);
     }
   }, []);
 
-  // Save to localStorage (debounced)
   useEffect(() => {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
@@ -57,8 +65,11 @@ export default function NewPostPage() {
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       const draft = localStorage.getItem(DRAFT_KEY);
+      console.log(draft);
+
       if (draft) {
         e.preventDefault();
+        console.log(draft);
       }
     };
     window.addEventListener("beforeunload", handler);
@@ -99,7 +110,6 @@ export default function NewPostPage() {
     if (form.image) formData.append("image", form.image);
 
     setLoading(true);
-    console.log(formData);
 
     try {
       const response = await createPost(formData);
@@ -151,10 +161,12 @@ export default function NewPostPage() {
           Featured Image
         </label>
         {form.previewImage && (
-          <img
+          <Image
             src={form.previewImage}
             alt="Preview"
             className="w-full h-60 object-cover rounded-md mt-2 mb-2"
+            width={600}
+            height={600}
           />
         )}
         <input

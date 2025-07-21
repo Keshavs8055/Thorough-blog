@@ -4,8 +4,6 @@ import cloudinary from "../utils/cloudinary";
 import path from "path";
 
 function uploadMiddleware(folderName: string) {
-  console.log("7. IN UPLOAD MIDDLEWARE", folderName);
-
   const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: (req, file) => {

@@ -9,7 +9,6 @@ export const requireAuth = async (
   next: NextFunction
 ): Promise<void> => {
   const token = req.cookies?.token;
-  console.log("1. AUTH TOKEN", token);
 
   if (!token) {
     res.status(401).json({
@@ -23,10 +22,8 @@ export const requireAuth = async (
   try {
     const decoded = verifyToken(token) as { id: string };
     const user = await User.findById(decoded.id).select("-password");
-    console.log("2. USER", user._id);
 
     if (!user) {
-      console.log("User not found in database.");
       res.status(401).json({
         // Send the response directly
         success: false,
@@ -34,7 +31,6 @@ export const requireAuth = async (
       });
       return; // Crucially, return here
     }
-    console.log("3.CLEAR", user._id);
 
     req.user = user;
     next(); // Proceed to the next middleware or route handler

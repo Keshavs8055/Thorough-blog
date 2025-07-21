@@ -6,6 +6,12 @@ import { useSearchParams } from "next/navigation";
 import { useInfinitePosts } from "@/hooks/infiniteScroll";
 import { PostFeed } from "@/components/Post/Feed";
 import { useEffect } from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Search Results",
+  description: "Search Results for posts",
+};
 
 const loadSearchResults = async (
   query: string,
@@ -33,7 +39,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     reset();
-  }, [query]);
+  }, [query, reset]);
 
   return (
     <Layout>

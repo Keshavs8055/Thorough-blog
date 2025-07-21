@@ -1,5 +1,5 @@
 export interface Author {
-  _id?: string; // MongoDB ObjectId as string
+  _id?: string;
   name: string;
   username: string;
   avatar?: string;
@@ -19,12 +19,12 @@ export interface RelatedArticle {
 }
 
 export interface Post {
-  _id?: string; // MongoDB ObjectId as string
+  _id?: string;
   title: string;
   summary: string;
-  date: string; // ISO date string
+  date: string;
   author: Author;
-  body: string[]; // Paragraphs
+  body: string[];
   image?: PostImage;
   pullQuotes?: string[];
   subheadings?: string[];
@@ -55,29 +55,6 @@ export interface AuthUser extends CompleteUser {
   avatar?: string;
 }
 
-// export interface CompleteUser {
-//   name: string;
-//   username: string;
-//   email: string;
-//   avatar?: string;
-//   role: "user" | "pending-author" | "author";
-//   isAuthor: boolean; // ADD TO FRONTEND
-//   authorProfile?: IAuthor;
-//   id: string;
-// }
-
-// export interface IAuthor {
-//   bio: string;
-//   avatar?: string;
-//   socialMedia?: {
-//     website?: string;
-//     twitter?: string;
-//     linkedin?: string;
-//     // Add other relevant social media platforms
-//   };
-//   expertise: string[];
-// }
-
 export interface CompleteUser {
   id: string;
   name: string;
@@ -103,7 +80,7 @@ export interface IAuthor {
 
 export type AuthorRequestForm = {
   bio: string;
-  avatar?: File | null;
+  avatar?: string | File | null;
   website?: string;
   twitter?: string;
   linkedin?: string;

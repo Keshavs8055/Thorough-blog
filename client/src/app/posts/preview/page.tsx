@@ -17,10 +17,13 @@ export default function PreviewPostPage() {
   if (!post) return <p className="text-center mt-10">Loading preview...</p>;
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-6">
-      <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+    <div
+      className="
+      mx-auto py-10 px-6 max-w-4xl"
+    >
+      <h1 className="text-4xl font-bold mb-4 py-4 text-center">{post.title}</h1>
       <div
-        className="prose"
+        className="prose  max-w-4xl"
         dangerouslySetInnerHTML={{ __html: post.body }}
       />
     </div>

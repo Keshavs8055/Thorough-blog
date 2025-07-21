@@ -23,11 +23,9 @@ ${content}
     const res = result.response.text();
     const arr = res.replace("```json", "").replace("```", "").trim();
     const tags = JSON.parse(arr);
-    console.log(tags);
 
     return tags;
   } catch (e) {
-    console.log("Error parsing tags response: ", e);
     return [];
   }
 }

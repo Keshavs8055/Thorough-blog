@@ -54,9 +54,6 @@ export const LikePost = catchAsync(async (req: Request, res: Response) => {
   const alreadyLiked = post.likes.includes(userId);
 
   if (alreadyLiked) {
-    console.log("Already liked");
-    console.log(post.likes.filter((id: string) => id !== userId));
-
     post.likes = post.likes.filter((id: string) => id !== userId);
   } else {
     post.likes.push(userId);

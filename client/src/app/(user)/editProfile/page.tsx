@@ -7,7 +7,7 @@ import { CompleteUser, presetExpertise } from "@/utils/types";
 import { useAuth } from "@/utils/authStore";
 import { fetchCompleteUserData, updateUserProfile } from "@/lib/api";
 import { useToast } from "@/utils/toast";
-
+import { Spinner } from "@/components/common/spinner";
 export interface UpdateForm extends CompleteUser {
   newImage?: string | File | null;
 }
@@ -43,20 +43,32 @@ const EditProfilePage = () => {
 
   // Fetch user profile
   useEffect(() => {
+    // if (!id) return;
+
+    // const getUserData = async () => {
+    //   const res = await fetchCompleteUserData(id);
+    //   if (res?.success && res.user) {
+    //     setFormData(res.user);
+    //     setAvatar({ ...avatar, preview: res.user.avatar || "" });
+    //   } else {
+    //     showToast("Failed to load profile.", "error");
+    //   }
+    // };
+    // getUserData();
     if (!id) return;
 
     const getUserData = async () => {
       const res = await fetchCompleteUserData(id);
       if (res?.success && res.user) {
         setFormData(res.user);
-        setAvatar({ ...avatar, preview: res.user.avatar || "" });
+        setAvatar((p) => ({ ...p, preview: res.user?.avatar || "" }));
       } else {
         showToast("Failed to load profile.", "error");
       }
     };
 
     getUserData();
-  }, [id]);
+  }, [id, showToast]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -116,8 +128,6 @@ const EditProfilePage = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("BEFORE SUBMIT", formData);
-
       const res = await updateUserProfile(formData);
       if (res?.success) {
         showToast("Profile updated successfully!", "success");
@@ -133,6 +143,9 @@ const EditProfilePage = () => {
     }
   };
 
+  if (!formData.id) {
+    return <Spinner />;
+  }
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold">Edit Profile</h2>
@@ -173,40 +186,42 @@ const EditProfilePage = () => {
         </div>
 
         {/* Bio */}
-        <div>
-          <label className="block text-sm font-medium">Bio</label>
-          <textarea
-            name="bio"
-            rows={3}
-            value={formData.authorProfile.bio}
-            onChange={handleInputChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Social Links */}
-        <div>
-          <p className="text-sm font-medium">Social Links (Optional)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            {["website", "github", "linkedin", "twitter"].map((key) => (
-              <input
-                key={key}
-                type="url"
-                placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                value={
-                  formData.authorProfile.socialMedia[
-                    key as keyof typeof formData.authorProfile.socialMedia
-                  ] || ""
-                }
-                onChange={handleSocialChange(
-                  key as keyof typeof formData.authorProfile.socialMedia
-                )}
-                className="border p-2 rounded"
-              />
-            ))}
+        {formData.isAuthor && (
+          <div>
+            <label className="block text-sm font-medium">Bio</label>
+            <textarea
+              name="bio"
+              rows={3}
+              value={formData.authorProfile.bio}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+            />
           </div>
-        </div>
-
+        )}
+        {/* Social Links */}
+        {formData.isAuthor && (
+          <div>
+            <p className="text-sm font-medium">Social Links (Optional)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+              {["website", "github", "linkedin", "twitter"].map((key) => (
+                <input
+                  key={key}
+                  type="url"
+                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                  value={
+                    formData.authorProfile.socialMedia[
+                      key as keyof typeof formData.authorProfile.socialMedia
+                    ] || ""
+                  }
+                  onChange={handleSocialChange(
+                    key as keyof typeof formData.authorProfile.socialMedia
+                  )}
+                  className="border p-2 rounded"
+                />
+              ))}
+            </div>
+          </div>
+        )}
         {/* Expertise Tags */}
         {formData.isAuthor && (
           <div>

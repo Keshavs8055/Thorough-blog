@@ -2,15 +2,7 @@
 import { useState, useEffect, JSX } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  Home,
-  PenTool,
-  User,
-  LogIn,
-  Grid,
-  Mail,
-  TrendingUp,
-} from "lucide-react";
+import { Home, PenTool, User, LogIn, Grid, Mail } from "lucide-react";
 import { useAuth } from "@/utils/authStore";
 import { Logo, MenuButton, NavItem } from "./navUtils";
 import { MobileMenu } from "./mobileMenu";
@@ -55,9 +47,8 @@ export default function Navbar() {
 
   const navItems = [
     { name: "Home", href: "/", icon: <Home size={20} /> },
-    { name: "Categories", href: "/categories", icon: <Grid size={20} /> },
+    { name: "Tags", href: "/allTags", icon: <Grid size={20} /> },
     { name: "Authors", href: "/authors", icon: <PenTool size={20} /> },
-    { name: "Featured", href: "/featured", icon: <TrendingUp size={20} /> },
     { name: "Contact", href: "/contact", icon: <Mail size={20} /> },
   ];
 

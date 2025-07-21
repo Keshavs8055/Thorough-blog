@@ -2,6 +2,7 @@
 
 import { stripHtmlAndTrim } from "@/lib/utils";
 import { Post } from "@/utils/types";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function PostCard({ post }: { post: Post }) {
@@ -17,9 +18,11 @@ export default function PostCard({ post }: { post: Post }) {
           {/* Image */}
           {image?.src && (
             <div className="lg:w-[30%]">
-              <img
+              <Image
                 src={image.src}
                 alt={image.alt}
+                width={200}
+                height={150}
                 className="w-full h-48 object-cover grayscale group-hover:grayscale-0 transition duration-300 border border-neutral-400"
               />
             </div>
@@ -71,7 +74,7 @@ export default function PostCard({ post }: { post: Post }) {
               {tags.map((tag) => (
                 <Link
                   key={tag}
-                  href={`/tags/${encodeURIComponent(tag)}`}
+                  href={`/posts/tags?q=${encodeURIComponent(tag)}`}
                   className="px-2 py-1 text-xs bg-neutral-100 rounded-full text-neutral-700 hover:bg-[var(--color-primary)] hover:text-white transition duration-200 no-underline hover:underline"
                 >
                   #{tag}

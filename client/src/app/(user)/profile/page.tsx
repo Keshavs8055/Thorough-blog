@@ -33,7 +33,6 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     const res = await userLogout();
-    console.log(res);
 
     if (!res.success) {
       showToast("Error During Logout", "error");
@@ -44,18 +43,20 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex justify-center items-center px-4 py-16 bg-[url('/paper-bg.png')] bg-cover font-serif">
+    <div className="flex justify-center items-center px-4 py-16 bg-cover font-serif">
       <div className="w-full max-w-4xl bg-white border border-zinc-300 shadow-md rounded-lg p-10">
         <div className="mb-10 flex p-5 border-b justify-between items-center">
           <h1 className="text-2xl font-bold text-center tracking-widest mb-2 text-zinc-800 drop-shadow-md">
             YOUR PROFILE
           </h1>
-          <Link
-            href="/new"
-            className="bg-primary text-white p-2 rounded"
-          >
-            <PlusCircleIcon />
-          </Link>
+          {detailedUser?.isAuthor && (
+            <Link
+              href="/new"
+              className="bg-primary text-white p-2 rounded"
+            >
+              <PlusCircleIcon />
+            </Link>
+          )}
         </div>
         {detailedUser ? (
           <div className="flex flex-col lg:flex-row gap-8 text-zinc-800">
@@ -102,42 +103,50 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              {detailedUser.authorProfile && detailedUser.role !== "user" && (
-                <div>
-                  <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-                    Expertise
-                  </h2>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-800">
-                    {detailedUser.authorProfile.expertise.length > 0 ? (
-                      detailedUser.authorProfile.expertise.map(
-                        (skill, index) => (
-                          <li
-                            key={index}
-                            className="font-sans"
-                          >
-                            {skill}
-                          </li>
+              {detailedUser.isAuthor &&
+                detailedUser.authorProfile &&
+                detailedUser.role !== "user" && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
+                      Expertise
+                    </h2>
+                    <ul className="list-disc list-inside space-y-1 text-zinc-800">
+                      {detailedUser.authorProfile.expertise.length > 0 ? (
+                        detailedUser.authorProfile.expertise.map(
+                          (skill, index) => (
+                            <li
+                              key={index}
+                              className="font-sans"
+                            >
+                              {skill}
+                            </li>
+                          )
                         )
-                      )
-                    ) : (
-                      <li className="italic text-zinc-500">
-                        No expertise listed
-                      </li>
-                    )}
-                  </ul>
-                </div>
+                      ) : (
+                        <li className="italic text-zinc-500">
+                          No expertise listed
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              {detailedUser.role === "pending-author" && (
+                <p className="text-sm text-zinc-500 italic">
+                  Your account is currently under review to become an author.
+                </p>
               )}
-
-              {detailedUser.authorProfile && detailedUser.authorProfile.bio && (
-                <div>
-                  <h2 className="text-xl font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-                    Biography
-                  </h2>
-                  <p className="font-sans text-zinc-800 leading-relaxed">
-                    {detailedUser.authorProfile.bio}
-                  </p>
-                </div>
-              )}
+              {detailedUser.isAuthor &&
+                detailedUser.authorProfile &&
+                detailedUser.authorProfile.bio && (
+                  <div>
+                    <h2 className="text-xl font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
+                      Biography
+                    </h2>
+                    <p className="font-sans text-zinc-800 leading-relaxed">
+                      {detailedUser.authorProfile.bio}
+                    </p>
+                  </div>
+                )}
 
               <div className="flex flex-wrap gap-4 items-end">
                 {user?.role === "pending-author" ? (

@@ -6,6 +6,7 @@ export const buildUserResponse = (user: IUser) => ({
   username: user.username,
   email: user.email,
   avatar: user.avatar,
+  isAuthor: user.isAuthor,
   role: user.role, // UPDATE FRONTEND
 });
 
@@ -17,4 +18,5 @@ export const buildCompleteUserResponse = (user: IUser) => ({
   avatar: user.avatar,
   role: user.role, // UPDATE FRONTEND
   authorProfile: user.authorProfile,
+  isAuthor: user.isAuthor,
 });

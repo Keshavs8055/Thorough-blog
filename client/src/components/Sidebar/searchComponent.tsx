@@ -33,7 +33,7 @@ export const SearchComponent = () => {
     <div className="relative w-full max-w-3xl mx-auto">
       <form
         onSubmit={handleSearch}
-        className="flex items-center justify-between border-b border-black"
+        className="flex items-center justify-between border rounded-xl p-2 my-2 border-black"
       >
         <input
           type="text"

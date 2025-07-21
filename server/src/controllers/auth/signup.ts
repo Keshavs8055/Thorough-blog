@@ -47,7 +47,6 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
         label: username,
       }
     : undefined;
-  console.log("AVATAR", avatar, "FILE", avatarFile);
 
   const { rawToken, hashed, expiresAt } = generateVerificationToken();
 

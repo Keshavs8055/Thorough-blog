@@ -6,6 +6,12 @@ import { useSearchParams } from "next/navigation";
 import { useInfinitePosts } from "@/hooks/infiniteScroll";
 import { PostFeed } from "@/components/Post/Feed";
 import { useEffect } from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Tagged Posts",
+  description: "Posts filtered by tags",
+};
 
 const loadTagResults = async (
   tagQuery: string,
@@ -33,7 +39,7 @@ export default function TagsPage() {
 
   useEffect(() => {
     reset();
-  }, [tagQuery]);
+  }, [tagQuery, reset]);
 
   return (
     <Layout>

@@ -1,10 +1,13 @@
+//signupForm.tsx
 "use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { SignupFormState } from "@/utils/types";
-import { useSignup } from "../hooks/useSignUp";
 import { FormField } from "./FormField";
+import { redirect } from "next/navigation";
+import { useToast } from "@/utils/toast";
+import { useLogin } from "../hooks/useAuth";
 
 const initialFormState: SignupFormState = {
   name: "",
@@ -16,20 +19,28 @@ const initialFormState: SignupFormState = {
 
 export default function SignupForm() {
   const [form, setForm] = useState(initialFormState);
-  const { loading, handleSignup } = useSignup();
+  const { loading, handleAuth } = useLogin();
+  const { showToast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
 
     setForm((p) => ({ ...p, image: file }));
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSignup(form);
+    const result = await handleAuth(form, false);
+
+    if (result.success) {
+      showToast("Please verify your email before logging in.", "info");
+      redirect("/login");
+    }
   };
 
   return (

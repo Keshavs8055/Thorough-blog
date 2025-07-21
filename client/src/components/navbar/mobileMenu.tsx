@@ -3,6 +3,7 @@ import { Dispatch, JSX, SetStateAction } from "react";
 import { motion } from "framer-motion";
 import { CloseButton, NavItem } from "./navUtils";
 import { Quote } from "../Sidebar/quote";
+import { SearchComponent } from "../Sidebar/searchComponent";
 // Mobile menu component
 interface MobileMenu {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export const MobileMenu = ({
   <AnimatePresence>
     {isOpen && (
       <motion.div
-        className="fixed right-0 top-0 h-full w-64 bg-[#f9f6f1] shadow-xl p-5 flex flex-col border-l border-gray-300"
+        className="fixed right-0 top-0 h-full w-90 bg-[#f9f6f1] shadow-xl p-5 flex flex-col border-l border-gray-300"
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
@@ -42,7 +43,9 @@ export const MobileMenu = ({
           </span>
           <CloseButton setIsOpen={setIsOpen} />
         </div>
-
+        <div className="pt-2 mb-2">
+          <SearchComponent />
+        </div>
         <div className="flex flex-col space-y-4">
           {navItems.map((item) => (
             <NavItem

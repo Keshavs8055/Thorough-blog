@@ -36,6 +36,7 @@ export default function BecomeAuthorPage() {
   useEffect(() => {
     if (user?.avatar) {
       setPreview(user.avatar);
+      setForm((prev) => ({ ...prev, avatar: user.avatar }));
     }
   }, [user?.avatar]);
 

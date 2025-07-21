@@ -11,7 +11,7 @@ interface Props {
 
 export const PostFeed = ({ posts, loading, observerRef }: Props) => {
   return (
-    <div className="space-y-6 xl:p-10 py-10">
+    <div className="space-y-6 xl:px-10 xl:py-22 py-10">
       {posts.map((post, i) => (
         <motion.div
           key={post._id}
