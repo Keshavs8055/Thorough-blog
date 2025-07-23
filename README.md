@@ -4,7 +4,6 @@
 
 A modern, full-stack blog platform built with TypeScript and Next.js, designed to empower independent writers, citizen journalists, and readers to create, share, and engage with authentic stories and reporting.
 
-**Live Demo:** [thorough-api.vercel.app](https://thorough-api.vercel.app)
 
 ---
 
