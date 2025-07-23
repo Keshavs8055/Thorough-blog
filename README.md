@@ -114,7 +114,7 @@ The easiest way to deploy is via [Vercel](https://vercel.com/new?utm_medium=defa
 
 ## License
 
-This project is for demonstration purposes. Add your preferred license if you intend to open source.
+This project is licensed under the [MIT License](https://github.com/Keshavs8055/public-blog/edit/main/LICENSE).
 
 ---
 
