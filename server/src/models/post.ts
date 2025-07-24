@@ -7,7 +7,7 @@ const PostSchema = new Schema<IPost>(
     summary: { type: String, required: true },
     date: { type: String, required: true },
     author: {
-      _id: { type: Schema.Types.ObjectId, ref: "User", required: true },
+      username: { type: String, required: true },
       name: { type: String, required: true },
     },
     body: [{ type: Schema.Types.Mixed, required: true }],

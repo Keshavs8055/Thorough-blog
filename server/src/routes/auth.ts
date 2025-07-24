@@ -10,12 +10,7 @@ const upload = UploadMiddleware("avatar");
 
 const AuthRoutes = express.Router();
 
-AuthRoutes.post(
-  "/signup",
-  //   express.urlencoded({ extended: true }),
-  upload.single("image"),
-  UserSignUp
-);
+AuthRoutes.post("/signup", upload.single("image"), UserSignUp);
 AuthRoutes.post("/login", UserLogin);
 AuthRoutes.post("/logout", requireAuth, userLogout);
 AuthRoutes.get("/verify", VerifyEmail);

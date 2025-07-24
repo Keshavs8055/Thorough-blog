@@ -5,7 +5,7 @@ export interface IPost extends Document {
   summary: string;
   date: string;
   author: {
-    _id: mongoose.Types.ObjectId;
+    username: string;
     name: string;
   };
   featured: { type: Boolean; default: false };

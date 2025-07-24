@@ -44,7 +44,7 @@ export default function PostCard({ post }: { post: Post }) {
             <div className="text-sm italic mt-3 text-neutral-600">
               By{" "}
               <span className=" text-[var(--color-primary)] font-medium">
-                {author.name}
+                <a href={`/author/${author.username}`}>{author.name}</a>
               </span>{" "}
               &nbsp;•&nbsp;{" "}
               <span className="tracking-wider font-mono text-xs">

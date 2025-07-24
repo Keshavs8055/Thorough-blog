@@ -18,7 +18,7 @@ const api = axios.create({
 });
 
 // Generic interface for API responses that matches backend format
-interface ApiResponse<T = unknown> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data?: T;
@@ -29,6 +29,20 @@ interface ApiResponse<T = unknown> {
   totalPosts?: number;
   posts?: Post[];
   likes?: number;
+  author?: {
+    username: string;
+    name: string;
+    avatar: string;
+    authorProfile: {
+      bio: string;
+      socialMedia: {
+        website?: string;
+        twitter?: string;
+        linkedin?: string;
+      };
+      expertise: string[];
+    };
+  };
 }
 
 // Function to handle Axios responses and errors consistently
@@ -81,21 +95,6 @@ export const fetchPostById = async (id: string): Promise<ApiResponse<Post>> => {
   );
 };
 
-// export const userSignUp = async (
-//   formData: SignupFormState
-// ): Promise<ApiResponse> => {
-//   return handleRequest(
-//     axios.post(`${API_URL}/api/auth/signup`, formData, {
-//       headers: {
-//         "Content-Type": "multipart/form-data",
-//       },
-//     })
-//   );
-// };
-// export const userLogin = async (form: LoginFormState): Promise<ApiResponse> => {
-//   return handleRequest(api.post("/api/auth/login", form));
-// };
-
 export const userSignUp = async (formData: FormData): Promise<ApiResponse> => {
   return handleRequest(
     axios.post(`${API_URL}/api/auth/signup`, formData, {
@@ -116,6 +115,12 @@ export const fetchCompleteUserData = async (
   id: string
 ): Promise<ApiResponse> => {
   return handleRequest(api.get(`/api/user/${id}`));
+};
+
+export const fetchAuthorPageData = async (
+  username: string
+): Promise<ApiResponse> => {
+  return handleRequest(api.get(`/api/user/author/${username}`));
 };
 
 export const verifyEmail = async (

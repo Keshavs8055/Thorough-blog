@@ -68,7 +68,7 @@ export default function SinglePost({ post }: { post: Post }) {
       >
         By{" "}
         <Link
-          href={`/authors/${post.author._id}`}
+          href={`/author/${post.author.username}`}
           className="np-underline hover:underline"
           style={{ color: "var(--color-primary)" }}
         >
@@ -160,44 +160,14 @@ export default function SinglePost({ post }: { post: Post }) {
           </div>
         )}
 
-        {post.author.bio && (
-          <div className="border-t pt-8 md:border-t-0">
-            <h3
-              className="text-xl font-bold mb-4"
-              style={{
-                fontFamily: "var(--font-heading)",
-                color: "var(--color-ink)",
-              }}
-            >
-              About the Author
-            </h3>
-            <div className="flex items-center space-x-4">
-              {post.author.avatar && (
-                <Image
-                  src={post.author.avatar}
-                  alt={post.author.name}
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full object-cover border"
-                  style={{ borderColor: "var(--color-muted)" }}
-                />
-              )}
-              <div>
-                <p
-                  className="font-bold"
-                  style={{ color: "var(--color-ink)" }}
-                >
-                  {post.author.name}
-                </p>
-                <p
-                  className="text-sm italic"
-                  style={{ color: "var(--color-muted)" }}
-                >
-                  {post.author.bio}
-                </p>
-              </div>
-            </div>
-          </div>
+        {post.author && (
+          <a
+            href={`/author/${post.author.username}`}
+            className="font-bold"
+            style={{ color: "var(--color-ink)" }}
+          >
+            @{post.author.name}
+          </a>
         )}
       </div>
       <div className="flex justify-between items-start flex-wrap border-t border-neutral-400 pt-4 mt-6">

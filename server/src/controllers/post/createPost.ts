@@ -34,7 +34,7 @@ export const createPost = catchAsync(async (req: Request, res: Response) => {
     },
     tags,
     author: {
-      _id: user._id,
+      username: user.username,
       name: user.name,
     },
     date,
