@@ -1,4 +1,5 @@
 import AuthProvider from "@/components/common/authProvider";
+import Loading from "@/components/common/loading";
 import Toast from "@/components/common/toast";
 import Navbar from "@/components/navbar/navbar";
 import "@/styles/globals.css";
@@ -36,7 +37,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <div className="">{children}</div>
-
+          <Loading />
           <Toast />
         </AuthProvider>
       </body>

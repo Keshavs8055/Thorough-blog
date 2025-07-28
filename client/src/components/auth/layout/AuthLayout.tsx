@@ -16,7 +16,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   }, [user, router, showToast]);
   return (
     <div className="flex flex-col">
-      <div className="w-[90%] md:max-w-xl rounded mx-auto  p-8 mt-9">
+      <div className="w-[90%] md:max-w-xl rounded mx-auto p-8 mt-9">
         {children}
       </div>
     </div>

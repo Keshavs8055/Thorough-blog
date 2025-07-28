@@ -1,36 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import { upgradeToAuthor } from "@/lib/api";
 import { useToast } from "@/utils/toast";
-import Image from "next/image";
-import { AuthorRequestForm, presetExpertise } from "@/utils/types";
 import { useAuth } from "@/utils/authStore";
-import { useRouter } from "next/navigation";
+import { useLoading } from "@/utils/loading";
+import { AuthorRequestForm, presetExpertise } from "@/utils/types";
+
+const defaultForm: AuthorRequestForm = {
+  bio: "",
+  avatar: null,
+  expertise: [],
+  website: "",
+  twitter: "",
+  linkedin: "",
+  error: {
+    avatar: false,
+    bio: false,
+    expertise: false,
+    website: false,
+    twitter: false,
+    linkedin: false,
+  },
+};
 
 export default function BecomeAuthorPage() {
   const showToast = useToast((state) => state.showToast);
   const user = useAuth((state) => state.user);
   const router = useRouter();
-  const [form, setForm] = useState<AuthorRequestForm>({
-    bio: "",
-    error: {
-      avatar: false,
-      bio: false,
-      expertise: false,
-      website: false,
-      twitter: false,
-      linkedin: false,
-    },
-    avatar: null,
-    expertise: [],
-    website: "",
-    twitter: "",
-    linkedin: "",
-  });
+  const { isLoading, setLoading } = useLoading();
 
+  const [form, setForm] = useState<AuthorRequestForm>(defaultForm);
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [customTag, setCustomTag] = useState("");
 
   useEffect(() => {
@@ -40,10 +44,32 @@ export default function BecomeAuthorPage() {
     }
   }, [user?.avatar]);
 
+  const isValidUrl = (url: string | undefined) => {
+    if (!url) return true;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleInputChange = (field: keyof AuthorRequestForm, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+      error: {
+        ...prev.error,
+        [field]:
+          field === "bio" ? value.trim().length < 50 : !isValidUrl(value),
+      },
+    }));
+  };
+
   const toggleExpertise = (tag: string) => {
     setForm((prev) => {
-      const already = prev.expertise.includes(tag);
-      const updated = already
+      const exists = prev.expertise.includes(tag);
+      const updated = exists
         ? prev.expertise.filter((t) => t !== tag)
         : prev.expertise.length < 3
         ? [...prev.expertise, tag]
@@ -57,85 +83,67 @@ export default function BecomeAuthorPage() {
     });
   };
 
-  const isValidUrl = (url: string) => {
-    if (!url) return true;
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const urlErrors = {
-      website: !isValidUrl(form.website || ""),
-      twitter: !isValidUrl(form.twitter || ""),
-      linkedin: !isValidUrl(form.linkedin || ""),
+    const errors = {
+      avatar: !form.avatar && !preview,
+      bio: form.bio.trim().length < 50,
+      expertise: form.expertise.length < 1,
+      website: !isValidUrl(form.website),
+      twitter: !isValidUrl(form.twitter),
+      linkedin: !isValidUrl(form.linkedin),
     };
 
-    const hasErrors =
-      !(form.avatar || preview) ||
-      form.bio.trim().length < 50 ||
-      form.expertise.length < 1 ||
-      Object.values(urlErrors).some((v) => v);
-
-    setForm((prev) => ({
-      ...prev,
-      error: {
-        avatar: !form.avatar,
-        bio: form.bio.trim().length < 50,
-        expertise: form.expertise.length < 1,
-        ...urlErrors,
-      },
-    }));
+    const hasErrors = Object.values(errors).some((v) => v);
 
     if (hasErrors) {
+      setForm((prev) => ({ ...prev, error: errors }));
       showToast("Please fill all required fields correctly.", "error");
       return;
     }
 
     setLoading(true);
-    const finalform = {
-      bio: form.bio,
-      expertise: form.expertise,
-      website: form.website,
-      twitter: form.twitter,
-      linkedin: form.linkedin,
-      error: form.error,
-      avatar: form.avatar,
-    };
-    const res = await upgradeToAuthor(finalform);
+
+    const response = await upgradeToAuthor(form);
     showToast(
-      res.success
+      response.success
         ? "Request to become an author is sent."
         : "Error while processing your request.",
-      res.success ? "success" : "error"
+      response.success ? "success" : "error"
     );
-    if (res.success) {
-      router.push("/profile");
-    }
 
+    if (response.success) router.push("/profile");
     setLoading(false);
+  };
+
+  const addCustomTag = () => {
+    const trimmed = customTag.trim();
+    if (
+      trimmed &&
+      !form.expertise.includes(trimmed) &&
+      form.expertise.length < 3
+    ) {
+      toggleExpertise(trimmed);
+      setCustomTag("");
+    }
   };
 
   return (
     <form
-      encType="multipart/form-data"
       onSubmit={handleSubmit}
-      className="max-w-3xl mx-auto p-6 rounded-xl bg-white shadow-xl space-y-6 mt-10"
+      encType="multipart/form-data"
+      className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-xl mt-10 space-y-6"
     >
       <h1 className="text-3xl font-semibold text-center">Become an Author</h1>
 
       {/* Avatar Upload */}
       <div
-        className={`space-y-2 rounded p-2 ${
-          form.error.avatar ? "border border-red-500" : ""
+        className={`space-y-2 p-2 ${
+          form.error.avatar && "border border-red-500"
         }`}
       >
-        <label className="block text-lg font-medium">Profile Avatar *</label>
+        <label className="text-lg font-medium block">Profile Avatar *</label>
         {preview && (
           <Image
             src={preview}
@@ -151,11 +159,11 @@ export default function BecomeAuthorPage() {
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setForm({
-                ...form,
+              setForm((prev) => ({
+                ...prev,
                 avatar: file,
-                error: { ...form.error, avatar: false },
-              });
+                error: { ...prev.error, avatar: false },
+              }));
               setPreview(URL.createObjectURL(file));
             }
           }}
@@ -173,14 +181,7 @@ export default function BecomeAuthorPage() {
             form.error.bio ? "border-red-500" : "border-gray-300"
           }`}
           value={form.bio}
-          onChange={(e) => {
-            const bio = e.target.value;
-            setForm({
-              ...form,
-              bio,
-              error: { ...form.error, bio: bio.trim().length < 50 },
-            });
-          }}
+          onChange={(e) => handleInputChange("bio", e.target.value)}
           required
         />
         <div className="text-sm text-right text-gray-500">
@@ -191,21 +192,21 @@ export default function BecomeAuthorPage() {
       {/* Expertise */}
       <div
         className={`space-y-2 p-2 ${
-          form.error.expertise ? "border border-red-500" : ""
+          form.error.expertise && "border border-red-500"
         }`}
       >
         <label className="block text-lg font-medium">Expertise (Max 3) *</label>
         <div className="flex flex-wrap gap-2">
           {presetExpertise.map((tag) => (
             <button
-              key={tag}
               type="button"
+              key={tag}
               onClick={() => toggleExpertise(tag)}
               className={`px-3 py-1 rounded-full text-sm border ${
                 form.expertise.includes(tag)
                   ? "bg-black text-white"
                   : "bg-white text-black"
-              } hover:bg-primary hover:text-white transition-all duration-200`}
+              } hover:bg-primary hover:text-white transition`}
             >
               {tag}
             </button>
@@ -214,31 +215,21 @@ export default function BecomeAuthorPage() {
         <div className="flex mt-2">
           <input
             type="text"
-            maxLength={20}
             placeholder="Add your own..."
-            className="flex-grow border px-3 py-1 rounded-l-md focus:outline-none"
+            maxLength={20}
             value={customTag}
             onChange={(e) => setCustomTag(e.target.value)}
+            className="flex-grow border px-3 py-1 rounded-l-md focus:outline-none"
           />
           <button
             type="button"
-            onClick={() => {
-              const trimmed = customTag.trim();
-              if (
-                trimmed &&
-                !form.expertise.includes(trimmed) &&
-                form.expertise.length < 3
-              ) {
-                toggleExpertise(trimmed);
-                setCustomTag("");
-              }
-            }}
+            onClick={addCustomTag}
             className="bg-black text-white px-4 py-1 rounded-r-md"
           >
             Add
           </button>
         </div>
-        {form.expertise.length > 0 && (
+        {!!form.expertise.length && (
           <div className="flex flex-wrap gap-2 mt-2">
             {form.expertise.map((tag) => (
               <span
@@ -254,68 +245,35 @@ export default function BecomeAuthorPage() {
 
       {/* Optional Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input
-          type="url"
-          placeholder="Website (optional)"
-          className={`border p-2 rounded-md ${
-            form.error.website ? "border-red-500" : ""
-          }`}
-          value={form.website || ""}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              website: e.target.value,
-              error: {
-                ...form.error,
-                website: !isValidUrl(e.target.value),
-              },
-            })
-          }
-        />
-        <input
-          type="url"
-          placeholder="Twitter (optional)"
-          className={`border p-2 rounded-md ${
-            form.error.twitter ? "border-red-500" : ""
-          }`}
-          value={form.twitter || ""}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              twitter: e.target.value,
-              error: {
-                ...form.error,
-                twitter: !isValidUrl(e.target.value),
-              },
-            })
-          }
-        />
-        <input
-          type="url"
-          placeholder="LinkedIn (optional)"
-          className={`border p-2 rounded-md ${
-            form.error.linkedin ? "border-red-500" : ""
-          }`}
-          value={form.linkedin || ""}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              linkedin: e.target.value,
-              error: {
-                ...form.error,
-                linkedin: !isValidUrl(e.target.value),
-              },
-            })
-          }
-        />
+        {["website", "twitter", "linkedin"].map((field) => (
+          <input
+            key={field}
+            type="url"
+            placeholder={`${
+              field.charAt(0).toUpperCase() + field.slice(1)
+            } (optional)`}
+            className={`border p-2 rounded-md ${
+              form.error[field as keyof typeof form.error]
+                ? "border-red-500"
+                : ""
+            }`}
+            value={form[field as keyof AuthorRequestForm] as string}
+            onChange={(e) =>
+              handleInputChange(
+                field as keyof AuthorRequestForm,
+                e.target.value
+              )
+            }
+          />
+        ))}
       </div>
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition"
       >
-        {loading ? "Submitting..." : "Submit Author Request"}
+        Submit Author Request
       </button>
     </form>
   );

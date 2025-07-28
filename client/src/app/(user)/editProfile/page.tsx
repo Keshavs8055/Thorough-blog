@@ -1,109 +1,104 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { CompleteUser, presetExpertise } from "@/utils/types";
+import { useToast } from "@/utils/toast";
 import { useAuth } from "@/utils/authStore";
 import { fetchCompleteUserData, updateUserProfile } from "@/lib/api";
-import { useToast } from "@/utils/toast";
+import { CompleteUser, presetExpertise } from "@/utils/types";
 import { Spinner } from "@/components/common/spinner";
+
 export interface UpdateForm extends CompleteUser {
   newImage?: string | File | null;
 }
 
+const defaultUser: UpdateForm = {
+  id: "",
+  name: "",
+  email: "",
+  username: "",
+  isAuthor: false,
+  role: "user",
+  authorProfile: {
+    bio: "",
+    expertise: [],
+    socialMedia: {
+      website: "",
+      twitter: "",
+      linkedin: "",
+      github: "",
+    },
+  },
+};
+
 const EditProfilePage = () => {
-  const id = useAuth((state) => state.user?.id);
   const router = useRouter();
   const { showToast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState<UpdateForm>({
-    id: "",
-    name: "",
-    email: "",
-    username: "",
-    isAuthor: false,
-    role: "user",
-    authorProfile: {
-      bio: "",
-      expertise: [],
-      socialMedia: {
-        website: "",
-        twitter: "",
-        linkedin: "",
-        github: "",
-      },
-    },
-  });
+  const userId = useAuth((s) => s.user?.id);
+  const [formData, setFormData] = useState<UpdateForm>(defaultUser);
   const [avatar, setAvatar] = useState<{ data: File | null; preview: string }>({
     data: null,
     preview: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch user profile
+  // Load user data
   useEffect(() => {
-    // if (!id) return;
+    if (!userId) return;
 
-    // const getUserData = async () => {
-    //   const res = await fetchCompleteUserData(id);
-    //   if (res?.success && res.user) {
-    //     setFormData(res.user);
-    //     setAvatar({ ...avatar, preview: res.user.avatar || "" });
-    //   } else {
-    //     showToast("Failed to load profile.", "error");
-    //   }
-    // };
-    // getUserData();
-    if (!id) return;
-
-    const getUserData = async () => {
-      const res = await fetchCompleteUserData(id);
+    const loadUserData = async () => {
+      const res = await fetchCompleteUserData(userId);
       if (res?.success && res.user) {
         setFormData(res.user);
-        setAvatar((p) => ({ ...p, preview: res.user?.avatar || "" }));
+        const ava = res.user.avatar || "";
+        setAvatar((prev) => ({ ...prev, preview: ava }));
       } else {
         showToast("Failed to load profile.", "error");
       }
     };
 
-    getUserData();
-  }, [id, showToast]);
+    loadUserData();
+  }, [userId, showToast]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
+  // Handlers
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
 
-    if (["name", "email", "username"].includes(name)) {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    } else if (name === "bio") {
-      setFormData((prev) => ({
-        ...prev,
-        authorProfile: { ...prev.authorProfile, bio: value },
-      }));
-    }
-  };
+      if (["name", "email", "username"].includes(name)) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      } else if (name === "bio") {
+        setFormData((prev) => ({
+          ...prev,
+          authorProfile: { ...prev.authorProfile, bio: value },
+        }));
+      }
+    },
+    []
+  );
 
-  const handleSocialChange =
+  const handleSocialChange = useCallback(
     (key: keyof typeof formData.authorProfile.socialMedia) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({
-        ...prev,
-        authorProfile: {
-          ...prev.authorProfile,
-          socialMedia: {
-            ...prev.authorProfile.socialMedia,
-            [key]: e.target.value,
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData((prev) => ({
+          ...prev,
+          authorProfile: {
+            ...prev.authorProfile,
+            socialMedia: {
+              ...prev.authorProfile.socialMedia,
+              [key]: e.target.value,
+            },
           },
-        },
-      }));
-    };
+        }));
+      },
+    [formData]
+  );
 
-  const handleTagToggle = (tag: string) => {
+  const handleTagToggle = useCallback((tag: string) => {
     setFormData((prev) => {
-      const isActive = prev.authorProfile.expertise.includes(tag);
-      const updatedTags = isActive
+      const exists = prev.authorProfile.expertise.includes(tag);
+      const updated = exists
         ? prev.authorProfile.expertise.filter((t) => t !== tag)
         : prev.authorProfile.expertise.length < 3
         ? [...prev.authorProfile.expertise, tag]
@@ -111,17 +106,20 @@ const EditProfilePage = () => {
 
       return {
         ...prev,
-        authorProfile: { ...prev.authorProfile, expertise: updatedTags },
+        authorProfile: { ...prev.authorProfile, expertise: updated },
       };
     });
-  };
+  }, []);
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatar({ data: file, preview: URL.createObjectURL(file) });
-    setFormData((prev) => ({ ...prev, newImage: file }));
-  };
+  const handleAvatarChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setAvatar({ data: file, preview: URL.createObjectURL(file) });
+      setFormData((prev) => ({ ...prev, newImage: file }));
+    },
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,28 +133,26 @@ const EditProfilePage = () => {
       } else {
         showToast("Failed to update profile.", "error");
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       showToast("An error occurred.", "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!formData.id) {
-    return <Spinner />;
-  }
+  if (!formData.id) return <Spinner />;
+
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <h2 className="text-2xl font-bold">Edit Profile</h2>
-
       <form
         onSubmit={handleSubmit}
         className="space-y-6"
       >
         {/* Avatar */}
         <div className="flex items-center space-x-4">
-          {formData.avatar && (
+          {avatar.preview && (
             <Image
               src={avatar.preview}
               alt="Avatar"
@@ -172,79 +168,89 @@ const EditProfilePage = () => {
           />
         </div>
 
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium">Name</label>
-          <input
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        {/* Bio */}
-        {formData.isAuthor && (
-          <div>
-            <label className="block text-sm font-medium">Bio</label>
-            <textarea
-              name="bio"
-              rows={3}
-              value={formData.authorProfile.bio}
+        {/* Basic Info */}
+        {(
+          ["name", "email", "username"] as Array<
+            keyof Pick<UpdateForm, "name" | "email" | "username">
+          >
+        ).map((field) => (
+          <div key={field}>
+            <label className="block text-sm font-medium capitalize">
+              {field}
+            </label>
+            <input
+              name={field}
+              type="text"
+              value={formData[field]}
               onChange={handleInputChange}
               className="w-full border p-2 rounded"
+              required
             />
           </div>
-        )}
-        {/* Social Links */}
+        ))}
+
+        {/* Author-only Fields */}
         {formData.isAuthor && (
-          <div>
-            <p className="text-sm font-medium">Social Links (Optional)</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-              {["website", "github", "linkedin", "twitter"].map((key) => (
-                <input
-                  key={key}
-                  type="url"
-                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                  value={
-                    formData.authorProfile.socialMedia[
+          <>
+            {/* Bio */}
+            <div>
+              <label className="block text-sm font-medium">Bio</label>
+              <textarea
+                name="bio"
+                rows={3}
+                value={formData.authorProfile.bio}
+                onChange={handleInputChange}
+                className="w-full border p-2 rounded"
+              />
+            </div>
+
+            {/* Socials */}
+            <div>
+              <p className="text-sm font-medium">Social Links (Optional)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                {["website", "github", "linkedin", "twitter"].map((key) => (
+                  <input
+                    key={key}
+                    type="url"
+                    placeholder={key}
+                    value={
+                      formData.authorProfile.socialMedia[
+                        key as keyof typeof formData.authorProfile.socialMedia
+                      ] ?? ""
+                    }
+                    onChange={handleSocialChange(
                       key as keyof typeof formData.authorProfile.socialMedia
-                    ] || ""
-                  }
-                  onChange={handleSocialChange(
-                    key as keyof typeof formData.authorProfile.socialMedia
-                  )}
-                  className="border p-2 rounded"
-                />
-              ))}
+                    )}
+                    className="border p-2 rounded"
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-        {/* Expertise Tags */}
-        {formData.isAuthor && (
-          <div>
-            <p className="text-sm font-medium">Expertise (max 3)</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {presetExpertise.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleTagToggle(tag)}
-                  className={`px-3 py-1 rounded-full text-sm border ${
-                    formData.authorProfile.expertise.includes(tag)
-                      ? "bg-black text-white"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
+
+            {/* Tags */}
+            <div>
+              <p className="text-sm font-medium">Expertise (max 3)</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {presetExpertise.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleTagToggle(tag)}
+                    className={`px-3 py-1 rounded-full text-sm border ${
+                      formData.authorProfile.expertise.includes(tag)
+                        ? "bg-black text-white"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
+        {/* Submit */}
         <button
           className="w-full bg-primary text-white py-2 rounded"
           type="submit"

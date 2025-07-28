@@ -14,67 +14,72 @@ const TiptapEditor = dynamic(() => import("@/components/editor/TipTapEditor"), {
 
 const DRAFT_KEY = "postDraft";
 
-type formState = {
+type FormState = {
   title: string;
   image: File | null;
   previewImage: string;
 };
 
+const initialForm: FormState = {
+  title: "",
+  image: null,
+  previewImage: "",
+};
+
 export default function NewPostPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [form, setForm] = useState<formState>({
-    title: "",
-    image: null,
-    previewImage: "",
-  });
+  const user = useAuth((state) => state.user);
+
+  const [form, setForm] = useState<FormState>(initialForm);
   const [body, setBody] = useState("<p>Start writing your story...</p>");
   const [loading, setLoading] = useState(false);
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-  const user = useAuth((state) => state.user);
+
+  // Restore Draft on Mount
   useEffect(() => {
     if (!user?.isAuthor) {
       showToast("You must be an author to create posts.", "error");
       router.push("/");
       return;
     }
-    const postData = localStorage.getItem(DRAFT_KEY);
-    if (postData) {
-      const { title, body } = JSON.parse(postData);
-      console.log(title, body);
+    restoreDraft();
+    setupUnloadWarning();
+  }, [user?.isAuthor, router, showToast]);
 
-      setForm((prev) => ({ ...prev, title }));
-      setBody(body);
-    }
-  }, []);
-
+  // Auto-save Draft
   useEffect(() => {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
       localStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({
-          title: form.title,
-          body,
-        })
+        JSON.stringify({ title: form.title, body })
       );
     }, 1000);
   }, [form.title, body]);
 
-  // Warn on unload if draft exists
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      const draft = localStorage.getItem(DRAFT_KEY);
-      console.log(draft);
+  const restoreDraft = () => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    try {
+      const parsed = JSON.parse(draft);
+      setForm((prev) => ({ ...prev, title: parsed.title }));
+      setBody(parsed.body);
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  };
 
-      if (draft) {
+  const setupUnloadWarning = () => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (localStorage.getItem(DRAFT_KEY)) {
         e.preventDefault();
-        console.log(draft);
+        e.returnValue = "";
       }
     };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -83,24 +88,28 @@ export default function NewPostPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setForm((prev) => ({ ...prev, image: file }));
-
     setForm((prev) => ({
       ...prev,
+      image: file,
       previewImage: file ? URL.createObjectURL(file) : "",
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const validateForm = (): boolean => {
     if (form.title.length < 20) {
       showToast("Title must be at least 20 characters.", "error");
-      return;
+      return false;
     }
     if (body.replace(/<[^>]*>/g, "").length < 1000) {
       showToast("Post body must be at least 1000 characters.", "error");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
     const formData = new FormData();
     formData.append("title", form.title);
@@ -110,13 +119,12 @@ export default function NewPostPage() {
     if (form.image) formData.append("image", form.image);
 
     setLoading(true);
-
     try {
-      const response = await createPost(formData);
-      if (response.success && response.data) {
+      const res = await createPost(formData);
+      if (res.success && res.data) {
         showToast("Post created successfully!", "success");
         localStorage.removeItem(DRAFT_KEY);
-        router.push(`/posts/${response.data._id}`);
+        router.push(`/posts/${res.data._id}`);
       } else {
         showToast("Failed to create post.", "error");
       }
@@ -136,6 +144,7 @@ export default function NewPostPage() {
     >
       <h1 className="text-3xl font-bold text-center">Create a New Post</h1>
 
+      {/* Title */}
       <div>
         <label
           htmlFor="title"
@@ -153,6 +162,7 @@ export default function NewPostPage() {
         />
       </div>
 
+      {/* Image Upload */}
       <div>
         <label
           htmlFor="image"
@@ -180,12 +190,15 @@ export default function NewPostPage() {
         />
       </div>
 
+      {/* Editor */}
       <div>
         <TiptapEditor
           content={body}
           onContentChange={setBody}
         />
       </div>
+
+      {/* Actions */}
       <div className="flex items-center justify-between">
         <button
           type="button"
