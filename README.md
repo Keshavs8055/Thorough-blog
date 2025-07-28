@@ -86,26 +86,6 @@ A modern, full-stack blog platform built with TypeScript and Next.js, designed t
 
 ---
 
-## Project Structure
-
-```
-public-blog/
-├── client/    # Next.js frontend app
-│   ├── src/
-│   │   ├── app/           # Next.js app directory
-│   │   ├── components/    # React components
-│   │   ├── lib/           # API utilities
-│   │   ├── utils/         # Zustand store, helpers, types
-│   │   └── mocks/         # Sample post data
-│   └── README.md
-├── server/    # Express backend API
-│   └── src/
-│       ├── utils/
-│       └── types.ts
-```
-
----
-
 ## Deployment
 
 The easiest way to deploy is via [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme). See [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for details.
