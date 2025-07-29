@@ -1,6 +1,7 @@
 import AuthProvider from "@/components/common/authProvider";
 import Loading from "@/components/common/loading";
 import Toast from "@/components/common/toast";
+import Layout from "@/components/Layout";
 import Navbar from "@/components/navbar/navbar";
 import "@/styles/globals.css";
 import { Metadata } from "next";
@@ -36,7 +37,9 @@ export default function RootLayout({
       <body className="text-ink antialiased">
         <AuthProvider>
           <Navbar />
-          <div className="">{children}</div>
+          <Layout>
+            <div className="">{children}</div>
+          </Layout>
           <Loading />
           <Toast />
         </AuthProvider>

@@ -14,10 +14,10 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-  }, // Enable sending cookies
+  },
 });
 
-// Generic interface for API responses that matches backend format
+// Generic API response interface
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
@@ -45,13 +45,12 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
-// Function to handle Axios responses and errors consistently
+// Handle API responses and errors
 const handleRequest = async <T = unknown>(
   request: Promise<AxiosResponse<ApiResponse<T>>>
 ): Promise<ApiResponse<T>> => {
   try {
     const response = await request;
-
     return response.data;
   } catch (error: unknown) {
     let errorMessage = "An unexpected error occurred.";
@@ -71,109 +70,121 @@ const handleRequest = async <T = unknown>(
     }
 
     console.error("API Error:", error);
-    // Return a consistent error response
     return { success: false, message: errorMessage };
   }
 };
 
-// API calls using the handler
-export const fetchHello = async (): Promise<ApiResponse<string>> => {
-  return handleRequest(api.get("/test"));
-};
+//
+// ─── AUTH ──────────────────────────────────────────────────────────────────────
+//
 
-export const fetchPosts = async (page = 1, limit = 6): Promise<ApiResponse> => {
-  return handleRequest(api.get(`/api/posts?page=${page}&limit=${limit}`));
-};
-
-export const fetchPostById = async (id: string): Promise<ApiResponse<Post>> => {
-  return handleRequest(
-    api.get(`/api/posts/${id}`, {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    })
-  );
-};
-
-export const userSignUp = async (formData: FormData): Promise<ApiResponse> => {
-  return handleRequest(
+export const userSignUp = async (formData: FormData): Promise<ApiResponse> =>
+  handleRequest(
     axios.post(`${API_URL}/api/auth/signup`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     })
   );
-};
 
-export const userLogin = async (form: LoginFormState): Promise<ApiResponse> => {
-  return handleRequest(api.post("/api/auth/login", form));
-};
+export const userLogin = async (form: LoginFormState): Promise<ApiResponse> =>
+  handleRequest(api.post("/api/auth/login", form));
 
-export const fetchUser = async (): Promise<ApiResponse> => {
-  return handleRequest(api.get("/api/user/me"));
-};
-
-export const fetchCompleteUserData = async (
-  id: string
-): Promise<ApiResponse> => {
-  return handleRequest(api.get(`/api/user/${id}`));
-};
-
-export const fetchAuthorPageData = async (
-  username: string
-): Promise<ApiResponse> => {
-  return handleRequest(api.get(`/api/user/author/${username}`));
-};
+export const userLogout = async (): Promise<ApiResponse> =>
+  handleRequest(api.post("/api/auth/logout"));
 
 export const verifyEmail = async (
   token: string,
   email: string
-): Promise<ApiResponse> => {
-  return handleRequest(
-    api.get(`/api/auth/verify?token=${token}&email=${email}`)
-  );
-};
+): Promise<ApiResponse> =>
+  handleRequest(api.get(`/api/auth/verify?token=${token}&email=${email}`));
 
-// Add a function for creating posts
+//
+// ─── POSTS ─────────────────────────────────────────────────────────────────────
+//
+
+export const fetchPosts = async (page = 1, limit = 6): Promise<ApiResponse> =>
+  handleRequest(api.get(`/api/posts?page=${page}&limit=${limit}`));
+
+export const fetchPostById = async (id: string): Promise<ApiResponse<Post>> =>
+  handleRequest(
+    api.get(`/api/posts/${id}`, {
+      headers: { "Cache-Control": "no-store" },
+    })
+  );
+
 export const createPost = async (
   formData: FormData
-): Promise<ApiResponse<Post>> => {
-  return handleRequest(
+): Promise<ApiResponse<Post>> =>
+  handleRequest(
     axios.post(`${API_URL}/api/posts`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    })
+  );
+
+export const updatePost = async (
+  id: string,
+  postData: Partial<Post>
+): Promise<ApiResponse<Post>> =>
+  handleRequest(api.put(`/api/posts/${id}`, postData));
+
+export const deletePost = async (id: string): Promise<ApiResponse> =>
+  handleRequest(api.delete(`/api/posts/${id}`));
+
+export const likePost = async (
+  postId: string
+): Promise<ApiResponse<{ likes: number }>> =>
+  handleRequest(api.post(`/api/posts/${postId}/like`));
+
+//
+// ─── USER ──────────────────────────────────────────────────────────────────────
+//
+
+export const fetchUser = async (): Promise<ApiResponse> =>
+  handleRequest(api.get("/api/user/me"));
+
+export const fetchCompleteUserData = async (id: string): Promise<ApiResponse> =>
+  handleRequest(api.get(`/api/user/${id}`));
+
+export const updateUserProfile = async (
+  form: UpdateForm
+): Promise<ApiResponse> => {
+  const formData = new FormData();
+
+  formData.append("authorProfile[bio]", form.authorProfile.bio);
+  if (form.newImage) formData.append("image", form.newImage);
+  if (form.name) formData.append("name", form.name);
+
+  if (form.isAuthor) {
+    const social = form.authorProfile.socialMedia;
+    if (social.website)
+      formData.append("authorProfile[socialMedia][website]", social.website);
+    if (social.twitter)
+      formData.append("authorProfile[socialMedia][twitter]", social.twitter);
+    if (social.linkedin)
+      formData.append("authorProfile[socialMedia][linkedin]", social.linkedin);
+    form.authorProfile.expertise.forEach((tag, i) =>
+      formData.append(`authorProfile[expertise][${i}]`, tag)
+    );
+  }
+
+  return handleRequest(
+    axios.put(`${API_URL}/api/user/edit-profile`, formData, {
       withCredentials: true,
     })
   );
 };
 
-// Add a function for updating posts
-export const updatePost = async (
-  id: string,
-  postData: Partial<Post>
-): Promise<ApiResponse<Post>> => {
-  return handleRequest(api.put(`/api/posts/${id}`, postData));
-};
+//
+// ─── AUTHOR ────────────────────────────────────────────────────────────────────
+//
 
-// Add a function for deleting posts
-export const deletePost = async (id: string): Promise<ApiResponse> => {
-  return handleRequest(api.delete(`/api/posts/${id}`));
-};
-// Add a function for liking posts
-export const likePost = async (
-  postId: string
-): Promise<ApiResponse<{ likes: number }>> => {
-  return handleRequest(api.post(`/api/posts/${postId}/like`));
-};
+export const fetchAuthorPageData = async (
+  username: string
+): Promise<ApiResponse> =>
+  handleRequest(api.get(`/api/user/author/${username}`));
 
-// Add a function for requesting author status
-export const requestAuthorStatus = async (): Promise<ApiResponse> => {
-  return handleRequest(api.post("/api/user/request-author"));
-};
-
-// Add a function for logging out
-export const userLogout = async (): Promise<ApiResponse> => {
-  return handleRequest(api.post("/api/auth/logout"));
-};
+export const requestAuthorStatus = async (): Promise<ApiResponse> =>
+  handleRequest(api.post("/api/user/request-author"));
 
 export const upgradeToAuthor = async (
   form: AuthorRequestForm
@@ -187,9 +198,9 @@ export const upgradeToAuthor = async (
     formData.append("authorProfile[socialMedia][twitter]", form.twitter);
   if (form.linkedin)
     formData.append("authorProfile[socialMedia][linkedin]", form.linkedin);
-  form.expertise.forEach((tag, index) => {
-    formData.append(`authorProfile[expertise][${index}]`, tag);
-  });
+  form.expertise.forEach((tag, i) =>
+    formData.append(`authorProfile[expertise][${i}]`, tag)
+  );
 
   return handleRequest(
     axios.post(`${API_URL}/api/user/upgrade`, formData, {
@@ -198,66 +209,39 @@ export const upgradeToAuthor = async (
   );
 };
 
-export const updateUserProfile = async (
-  form: UpdateForm
-): Promise<ApiResponse> => {
-  const formData = new FormData();
-
-  formData.append("authorProfile[bio]", form.authorProfile.bio);
-  if (form.newImage) formData.append("image", form.newImage);
-  if (form.name) formData.append("name", form.name);
-  if (form.isAuthor && form.authorProfile.socialMedia.website)
-    formData.append(
-      "authorProfile[socialMedia][website]",
-      form.authorProfile.socialMedia.website
-    );
-  if (form.isAuthor && form.authorProfile.socialMedia.twitter)
-    formData.append(
-      "authorProfile[socialMedia][twitter]",
-      form.authorProfile.socialMedia.twitter
-    );
-  if (form.isAuthor && form.authorProfile.socialMedia.linkedin)
-    formData.append(
-      "authorProfile[socialMedia][linkedin]",
-      form.authorProfile.socialMedia.linkedin
-    );
-  if (form.isAuthor) {
-    form.authorProfile.expertise.forEach((tag, index) => {
-      formData.append(`authorProfile[expertise][${index}]`, tag);
-    });
-  }
-
-  return handleRequest(
-    axios.put(`${API_URL}/api/user/edit-profile`, formData, {
-      withCredentials: true,
-    })
-  );
-};
+//
+// ─── SEARCH ────────────────────────────────────────────────────────────────────
+//
 
 export const searchPosts = async (
   q: string,
   page = 1,
   limit = 10
-): Promise<ApiResponse> => {
-  return handleRequest(
+): Promise<ApiResponse> =>
+  handleRequest(
     api.get(
       `/api/search/searchPosts?q=${encodeURIComponent(
         q
       )}&page=${page}&limit=${limit}`
     )
   );
-};
-
 export const searchPostsByTag = async (
-  q: string,
+  tag: string,
   page = 1,
   limit = 10
-): Promise<ApiResponse> => {
-  return handleRequest(
+): Promise<ApiResponse> =>
+  handleRequest(
     api.get(
-      `/api/search/searchPosts?q=${encodeURIComponent(
-        q
-      )}&page=${page}&limit=${limit}`
+      "/api/search/tags?q=" +
+        encodeURIComponent(tag) +
+        `&page=${page}&limit=${limit}`
     )
   );
-};
+// Alias removed: `searchPostsByTag` was identical to `searchPosts`
+
+//
+// ─── TEST ──────────────────────────────────────────────────────────────────────
+//
+
+export const fetchHello = async (): Promise<ApiResponse<string>> =>
+  handleRequest(api.get("/test"));

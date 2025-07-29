@@ -42,7 +42,7 @@ export const SearchComponent = () => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="flex-1 bg-transparent focus:outline-none text-lg italic font-serif text-gray-800 placeholder:text-gray-500"
+          className="flex-1 bg-transparent focus:outline-none  italic font-serif text-gray-800 placeholder:text-gray-500"
         />
         <button
           type="submit"

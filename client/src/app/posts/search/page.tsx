@@ -32,7 +32,7 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
 
-  const { posts, loading, observerRef, reset } = useInfinitePosts({
+  const { posts, observerRef, reset } = useInfinitePosts({
     query,
     fetchFn: loadSearchResults,
   });
@@ -49,7 +49,6 @@ export default function SearchPage() {
         </h2>
         <PostFeed
           posts={posts}
-          loading={loading}
           observerRef={observerRef}
         />
       </div>

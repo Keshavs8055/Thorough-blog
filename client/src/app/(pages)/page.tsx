@@ -1,6 +1,5 @@
 "use client";
 
-import Layout from "@/components/Layout";
 import { fetchPosts } from "@/lib/api";
 import { PostFeed } from "@/components/Post/Feed";
 import { useInfinitePosts } from "@/hooks/infiniteScroll";
@@ -31,11 +30,9 @@ export default function HomePage() {
   }, [loading, setLoading]);
 
   return (
-    <Layout>
-      <PostFeed
-        posts={posts}
-        observerRef={observerRef}
-      />
-    </Layout>
+    <PostFeed
+      posts={posts}
+      observerRef={observerRef}
+    />
   );
 }
