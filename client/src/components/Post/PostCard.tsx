@@ -9,7 +9,7 @@ export default function PostCard({ post }: { post: Post }) {
   const { _id, image, title, author, date, summary, likeCount, tags } = post;
 
   return (
-    <article className="border-b border-dashed border-neutral-400 pb-10 mb-12 px-4 sm:px-8 font-serif  rounded-sm">
+    <article className="min-w-2xl border-b border-dashed border-neutral-400 pb-10 mb-12 px-4 sm:px-8 font-serif  rounded-sm">
       <div
         // href={`/posts/${_id}`}
         className="group block no-underline"

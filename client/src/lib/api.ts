@@ -29,6 +29,7 @@ export interface ApiResponse<T = unknown> {
   totalPosts?: number;
   posts?: Post[];
   likes?: number;
+  tags?: string[];
   author?: {
     username: string;
     name: string;
@@ -237,6 +238,9 @@ export const searchPostsByTag = async (
         `&page=${page}&limit=${limit}`
     )
   );
+
+export const getAllTags = async (): Promise<ApiResponse<string[]>> =>
+  handleRequest(api.get("/api/search/all-tags"));
 // Alias removed: `searchPostsByTag` was identical to `searchPosts`
 
 //

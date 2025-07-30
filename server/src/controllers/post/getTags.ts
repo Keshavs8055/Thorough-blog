@@ -45,3 +45,11 @@ export const getPostsByTags = catchAsync(
     });
   }
 );
+
+export const getTags = catchAsync(async (req: Request, res: Response) => {
+  const tags = await Post.distinct("tags");
+  res.status(200).json({
+    success: true,
+    tags,
+  });
+});
