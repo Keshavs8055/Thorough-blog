@@ -7,6 +7,7 @@ import { useToast } from "@/utils/toast";
 import { createPost } from "@/lib/api";
 import Image from "next/image";
 import { useAuth } from "@/utils/authStore";
+import { motion } from "framer-motion";
 
 const TiptapEditor = dynamic(() => import("@/components/editor/TipTapEditor"), {
   ssr: false,
@@ -36,7 +37,6 @@ export default function NewPostPage() {
   const [loading, setLoading] = useState(false);
   const saveTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Restore Draft on Mount
   useEffect(() => {
     if (!user?.isAuthor) {
       showToast("You must be an author to create posts.", "error");
@@ -47,7 +47,6 @@ export default function NewPostPage() {
     setupUnloadWarning();
   }, [user?.isAuthor, router, showToast]);
 
-  // Auto-save Draft
   useEffect(() => {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
@@ -137,18 +136,22 @@ export default function NewPostPage() {
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
-      className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-lg space-y-6 mt-5"
+      className="max-w-4xl mx-auto p-8 bg-[#FFFBF5] border border-[#6E5D4E] rounded-xl shadow-sm space-y-6 mt-10 font-serif"
       encType="multipart/form-data"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <h1 className="text-3xl font-bold text-center">Create a New Post</h1>
+      <h1 className="text-4xl font-bold text-center text-[#3D2C1F] font-display uppercase">
+        Create a New Post
+      </h1>
 
-      {/* Title */}
       <div>
         <label
           htmlFor="title"
-          className="block text-sm font-medium"
+          className="block text-sm text-[#3D2C1F] font-medium mb-1"
         >
           Title
         </label>
@@ -158,15 +161,14 @@ export default function NewPostPage() {
           value={form.title}
           onChange={handleInputChange}
           required
-          className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1"
+          className="w-full border border-[#6E5D4E] rounded-md px-4 py-2 bg-[#FFFBF5] text-[#3D2C1F] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#8B735C]"
         />
       </div>
 
-      {/* Image Upload */}
       <div>
         <label
           htmlFor="image"
-          className="block text-sm font-medium"
+          className="block text-sm text-[#3D2C1F] font-medium mb-1"
         >
           Featured Image
         </label>
@@ -174,7 +176,7 @@ export default function NewPostPage() {
           <Image
             src={form.previewImage}
             alt="Preview"
-            className="w-full h-60 object-cover rounded-md mt-2 mb-2"
+            className="w-full h-60 object-cover rounded-md mt-2 mb-2 border border-[#6E5D4E] filter sepia"
             width={600}
             height={600}
           />
@@ -185,25 +187,23 @@ export default function NewPostPage() {
           name="image"
           accept="image/*"
           onChange={handleImageChange}
-          className="w-full mt-1 border border-gray-300 rounded-md px-3 py-2"
+          className="w-full mt-1 border border-[#6E5D4E] rounded-md px-3 py-2 bg-white text-[#3D2C1F]"
           required
         />
       </div>
 
-      {/* Editor */}
-      <div>
+      <div className="prose max-w-none">
         <TiptapEditor
           content={body}
           onContentChange={setBody}
         />
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex gap-4 items-center justify-between">
         <button
           type="button"
           onClick={() => router.push("/posts/preview")}
-          className="w-full py-2 px-4 font-semibold bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+          className="w-full py-2 px-4 font-semibold text-[#3D2C1F] border border-[#6E5D4E] rounded-md hover:bg-[#EFE5DA] transition"
         >
           Preview Post
         </button>
@@ -211,11 +211,11 @@ export default function NewPostPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 font-semibold bg-primary text-white rounded-md hover:bg-gray-900 disabled:opacity-50"
+          className="w-full py-2 px-4 font-semibold bg-[#8B735C] text-[#FFFBF5] rounded-md hover:bg-[#6B7F6B] transition disabled:opacity-50"
         >
           {loading ? "Publishing..." : "Publish Post"}
         </button>
       </div>
-    </form>
+    </motion.form>
   );
 }

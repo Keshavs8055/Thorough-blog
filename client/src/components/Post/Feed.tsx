@@ -9,21 +9,35 @@ interface Props {
 
 export const PostFeed = ({ posts, observerRef }: Props) => {
   return (
-    <div className="space-y-6 xl:px-10 xl:py-22 py-10">
+    <motion.div
+      className="bg-[#FFFBF5] xl:px-10 px-4 py-12 space-y-10"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.07,
+          },
+        },
+      }}
+    >
       {posts.map((post, i) => (
         <motion.div
           key={post._id}
-          initial={{ opacity: 0, y: 20 }}
+          className="border border-[#6E5D4E] p-6 rounded-md shadow-sm "
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: i * 0.05 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: i * 0.08 }}
         >
           <PostCard post={post} />
         </motion.div>
       ))}
+
       <div
         ref={observerRef}
-        className="flex justify-center items-center py-8"
+        className="flex justify-center items-center py-12"
       />
-    </div>
+    </motion.div>
   );
 };

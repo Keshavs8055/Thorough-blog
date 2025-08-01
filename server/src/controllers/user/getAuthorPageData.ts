@@ -25,6 +25,7 @@ export const getAuthorPageData = catchAsync(
         message: "Author profile not found.",
       });
     }
+    console.log(user);
 
     // Fetch published posts by this author
     const posts = await Post.find({ "author.username": user.username })

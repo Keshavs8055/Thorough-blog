@@ -7,6 +7,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function SinglePost({ post }: { post: Post }) {
   const [likeCount, setLikeCount] = useState(post.likeCount);
@@ -44,38 +45,32 @@ export default function SinglePost({ post }: { post: Post }) {
   };
 
   return (
-    <article
-      className="font-serif max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8"
-      style={{ fontFamily: "var(--font-serif)" }}
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="max-w-3xl mx-auto py-12 px-6 bg-[#FFFBF5]"
+      style={{ fontFamily: "Merriweather, serif" }}
     >
-      {/* Title */}
-      <div className="mb-8 border-b pb-4">
+      <header className="border-b-2 border-[#6E5D4E] pb-4 mb-8">
         <h1
-          className="text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight text-center"
-          style={{
-            fontFamily: "var(--font-heading)",
-            color: "var(--color-ink)",
-          }}
+          className="text-4xl font-extrabold text-center text-[#3D2C1F] tracking-tight uppercase"
+          style={{ fontFamily: "Playfair Display, serif" }}
         >
-          {post.title.toUpperCase()}
+          {post.title}
         </h1>
-      </div>
+        <p className="text-sm text-center text-[#6E5D4E] italic mt-2">
+          By{" "}
+          <Link
+            href={`/author/${post.author.username}`}
+            className="hover:underline text-[#8B735C]"
+          >
+            {post.author.name}
+          </Link>{" "}
+          • {new Date(post.date).toLocaleDateString()}
+        </p>
+      </header>
 
-      {/* Author and Date */}
-      <div
-        className="text-sm italic text-center mb-6"
-        style={{ color: "var(--color-muted)" }}
-      >
-        By{" "}
-        <Link
-          href={`/author/${post.author.username}`}
-          className="np-underline hover:underline"
-          style={{ color: "var(--color-primary)" }}
-        >
-          {post.author.name}
-        </Link>{" "}
-        • {new Date(post.date).toLocaleDateString()}
-      </div>
       {post.image && (
         <figure className="my-6">
           <Image
@@ -83,14 +78,10 @@ export default function SinglePost({ post }: { post: Post }) {
             alt={post.image.alt}
             width={700}
             height={100}
-            className="w-full max-h-screen object-cover rounded-md border"
-            style={{ borderColor: "var(--color-muted)" }}
+            className="w-full object-cover rounded border border-[#6E5D4E] filter sepia"
           />
           {post.image.caption && (
-            <figcaption
-              className="text-sm italic text-center mt-2"
-              style={{ color: "var(--color-muted)" }}
-            >
+            <figcaption className="text-sm italic text-center mt-2 text-[#6E5D4E]">
               {post.image.caption}{" "}
               {post.image.source && (
                 <span className="text-xs">({post.image.source})</span>
@@ -99,7 +90,7 @@ export default function SinglePost({ post }: { post: Post }) {
           )}
         </figure>
       )}
-      {/* Body */}
+
       {post.body.map((htmlString: string, i: number) => (
         <div
           key={i}
@@ -108,49 +99,39 @@ export default function SinglePost({ post }: { post: Post }) {
               ? "first-letter:text-5xl first-letter:font-bold first-letter:float-left first-letter:pr-2"
               : ""
           }`}
-          style={{ color: "var(--color-ink)", lineHeight: "1.6" }}
+          style={{ color: "#3D2C1F", lineHeight: "1.75" }}
           dangerouslySetInnerHTML={{ __html: htmlString }}
         />
       ))}
 
-      {/* Pull Quote */}
-      {post.pullQuotes && post.pullQuotes.length > 0 && (
+      {post.pullQuotes?.[0] && (
         <blockquote
-          className="my-8 px-6 py-4 italic border-l-4 bg-sepia-light"
+          className="border-l-4 pl-6 my-8 italic text-lg"
           style={{
-            borderColor: "var(--color-primary)",
+            borderColor: "#8B735C",
             backgroundColor: "#f8f1e0",
+            color: "#3D2C1F",
           }}
         >
-          <p
-            className="text-lg"
-            style={{ color: "var(--color-ink)" }}
-          >
-            “{post.pullQuotes[0]}”
-          </p>
+          “{post.pullQuotes[0]}”
         </blockquote>
       )}
 
-      {/* Related Articles & Author Info */}
-      <div className="border-t pt-8 mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-        {post.relatedArticles && post.relatedArticles?.length > 0 && (
+      <div className="mt-12 grid md:grid-cols-2 gap-10 border-t border-[#6E5D4E] pt-10">
+        {/* {post.relatedArticles?.length > 0 && (
           <div>
             <h3
-              className="text-xl font-bold mb-4"
-              style={{
-                fontFamily: "var(--font-heading)",
-                color: "var(--color-ink)",
-              }}
+              className="text-xl font-bold mb-4 text-[#3D2C1F]"
+              style={{ fontFamily: "Playfair Display, serif" }}
             >
               Related Articles
             </h3>
-            <ul className="list-disc list-inside space-y-2">
+            <ul className="space-y-2">
               {post.relatedArticles.map((rel, i) => (
                 <li key={i}>
                   <Link
                     href={rel.href}
-                    className="hover:underline no-underline"
-                    style={{ color: "var(--color-primary)" }}
+                    className="text-[#8B735C] hover:underline"
                   >
                     {rel.title}
                   </Link>
@@ -158,40 +139,38 @@ export default function SinglePost({ post }: { post: Post }) {
               ))}
             </ul>
           </div>
-        )}
-
-        {post.author && (
-          <a
+        )} */}
+        <div>
+          <h3
+            className="text-xl font-bold text-[#3D2C1F] mb-2"
+            style={{ fontFamily: "Playfair Display, serif" }}
+          >
+            Author
+          </h3>
+          <Link
             href={`/author/${post.author.username}`}
-            className="font-bold"
-            style={{ color: "var(--color-ink)" }}
+            className="text-[#8B735C] hover:underline"
           >
             @{post.author.name}
-          </a>
-        )}
+          </Link>
+        </div>
       </div>
-      <div className="flex justify-between items-start flex-wrap border-t border-neutral-400 pt-4 mt-6">
-        {/* Tags Section */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="mt-2">
-            <h3
-              className="text-lg font-semibold mb-2 tracking-wider uppercase"
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                color: "#1a1a1a",
-              }}
+
+      <div className="flex justify-between items-start flex-wrap border-t border-[#6E5D4E] pt-6 mt-10">
+        {post.tags?.length > 0 && (
+          <div>
+            <h4
+              className="text-lg font-semibold mb-2 text-[#3D2C1F] uppercase tracking-wide"
+              style={{ fontFamily: "Playfair Display, serif" }}
             >
               Tags
-            </h3>
+            </h4>
             <ul className="flex flex-wrap gap-2">
               {post.tags.map((tag, i) => (
                 <li key={i}>
                   <Link
                     href={`/tags/${tag}`}
-                    className="border border-gray-600 text-gray-800 px-3 py-1 rounded-full text-sm transition-all duration-200 ease-in-out hover:bg-gray-100 hover:underline hover:border-black"
-                    style={{
-                      fontFamily: "'Playfair Display', serif",
-                    }}
+                    className="bg-[#8B735C] text-[#FFFBF5] px-3 py-1 rounded-full text-sm hover:bg-[#6B7F6B] transition-all duration-150"
                   >
                     {tag}
                   </Link>
@@ -201,56 +180,40 @@ export default function SinglePost({ post }: { post: Post }) {
           </div>
         )}
 
-        <div className="mt-4 flex items-center gap-2">
-          <span
-            className="text-sm tracking-widest text-gray-700"
-            style={{
-              fontFamily: "'Playfair Display', serif",
-            }}
-          >
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-sm tracking-wider text-[#3D2C1F]">
             Likes: {likeCount}
           </span>
-          <button
-            className={`flex justify-around items-center border border-gray-700 px-2 py-1 rounded transition-all duration-200 text-gray-800 ${
-              liked
-                ? "bg-primary text-white hover:text-black hover:border-black"
-                : "hover:bg-neutral-100 hover:border-black"
-            } `}
-            style={{
-              fontFamily: "'Playfair Display', serif",
-            }}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleLike}
+            className={`flex items-center gap-1 px-3 py-1 border rounded text-sm transition-colors duration-200 ${
+              liked
+                ? "bg-[#8B735C] text-[#FFFBF5] border-[#6E5D4E]"
+                : "border-[#6E5D4E] text-[#3D2C1F] hover:bg-[#f2e8da]"
+            }`}
+            style={{ fontFamily: "Lato, sans-serif" }}
           >
-            {liked ? (
-              <ThumbsDown className="inline-block mr-1" />
-            ) : (
-              <ThumbsUp className="inline-block mr-1" />
-            )}
-            <span>{liked ? `Unlike` : `Like`}</span>
-          </button>
+            {liked ? <ThumbsDown size={16} /> : <ThumbsUp size={16} />}
+            {liked ? "Unlike" : "Like"}
+          </motion.button>
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div
-        className="mt-12 pt-8 border-t text-center text-sm italic"
-        style={{ color: "var(--color-muted)" }}
-      >
+      <footer className="mt-16 border-t border-[#6E5D4E] pt-6 text-center text-sm italic text-[#6E5D4E]">
         Share your thoughts below. Join the community and contribute your voice.
-      </div>
-
-      {/* Share Buttons */}
-      <div className="mt-6 flex justify-center space-x-4 text-sm">
-        {["Twitter", "Facebook"].map((platform) => (
-          <button
-            key={platform}
-            className="hover:underline"
-            style={{ color: "var(--color-primary)" }}
-          >
-            Share on {platform}
-          </button>
-        ))}
-      </div>
-    </article>
+        <div className="mt-4 flex justify-center gap-4">
+          {["Twitter", "Facebook"].map((platform) => (
+            <button
+              key={platform}
+              className="text-[#8B735C] hover:underline"
+            >
+              Share on {platform}
+            </button>
+          ))}
+        </div>
+      </footer>
+    </motion.article>
   );
 }

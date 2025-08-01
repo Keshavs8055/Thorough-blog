@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { verifyEmail } from "@/lib/api";
 import { useToast } from "@/utils/toast";
 import { useAuth } from "@/utils/authStore";
+import { motion } from "framer-motion";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -51,35 +52,57 @@ export default function VerifyEmailPage() {
   }, [token, email, router, login, showToast, isLoggedIn]);
 
   return (
-    <div className="flex items-center justify-center h-[80vh] text-center px-4">
-      <div className="max-w-md w-full space-y-3">
+    <div className="flex items-center justify-center min-h-[80vh] bg-[#FFFBF5] px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="max-w-md w-full border border-[#6E5D4E] bg-[#FFFBF5] shadow-sm p-8 space-y-4 text-center rounded-md"
+      >
         {status === "verifying" && (
           <>
-            <h2 className="text-xl font-semibold animate-pulse">
+            <motion.h2
+              className="text-xl font-bold font-serif text-[#3D2C1F] animate-pulse"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               Verifying your email...
-            </h2>
-            <p className="text-sm text-gray-600">Please wait a moment.</p>
+            </motion.h2>
+            <p className="text-sm font-sans text-[#6E5D4E]">
+              Please wait a moment.
+            </p>
           </>
         )}
 
         {status === "success" && (
           <>
-            <h2 className="text-xl font-semibold text-green-600">
+            <motion.h2
+              className="text-xl font-bold font-serif text-[#6B7F6B]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               Verification Successful
-            </h2>
-            <p className="text-sm text-gray-600">{message}</p>
+            </motion.h2>
+            <p className="text-sm font-sans text-[#6E5D4E]">{message}</p>
           </>
         )}
 
         {status === "error" && (
           <>
-            <h2 className="text-xl font-semibold text-red-600">
+            <motion.h2
+              className="text-xl font-bold font-serif text-[#C05746]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               Verification Failed
-            </h2>
-            <p className="text-sm text-gray-600">{message}</p>
+            </motion.h2>
+            <p className="text-sm font-sans text-[#6E5D4E]">{message}</p>
           </>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

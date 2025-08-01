@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { searchPostsByTag } from "@/lib/api";
+import { getAllTags, searchPostsByTag } from "@/lib/api";
 import { Post } from "@/utils/types";
 import { stripHtmlAndTrim } from "@/lib/utils";
-import { AllTags, AllTagsComponent } from "@/components/common/displayAllTags";
+import { AllTagsComponent } from "@/components/common/displayAllTags";
 
 export default function AllTagsPage() {
   const [tagPosts, setTagPosts] = useState<Record<string, Post[]>>({});
@@ -12,11 +12,6 @@ export default function AllTagsPage() {
   const [selectedTag] = useState<string | null>(null);
 
   useEffect(() => {
-    AllTags().then((fetchedTags) => {
-      if (fetchedTags) {
-        setTags(fetchedTags);
-      }
-    });
     async function fetchTagPosts() {
       const allData: Record<string, Post[]> = {};
       for (const tag of tags) {
@@ -30,16 +25,25 @@ export default function AllTagsPage() {
       }
       setTagPosts(allData);
     }
+    async function fetchAllTags() {
+      const data = await getAllTags();
+      if (data.success && Array.isArray(data.tags)) {
+        setTags(data.tags);
+      }
+    }
+    fetchAllTags();
     if (tags.length > 0) fetchTagPosts();
   }, [tags]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10 font-serif text-gray-900">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-        <h1 className="text-4xl font-bold tracking-wider border-b pb-4 border-gray-400">
+    <div className="max-w-7xl mx-auto px-4 pt-22 font-serif text-gray-900">
+      <div className="flex justify-between border-b items-center mb-10 gap-4 py-5">
+        <h1 className="text-4xl font-bold tracking-wider  border-gray-400">
           Extra! Extra! Read All About It!
         </h1>
-        <AllTagsComponent />
+        <div>
+          <AllTagsComponent allTags={tags} />
+        </div>
       </div>
 
       {(selectedTag ? [selectedTag] : tags).map((tag) => (
@@ -47,7 +51,7 @@ export default function AllTagsPage() {
           key={tag}
           className="mb-20"
         >
-          <h2 className="text-2xl md:text-3xl font-semibold border-l-4 border-black pl-3 mb-6 italic tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-semibold bg-amber-200  pl-3 mb-6 italic tracking-tight">
             #{tag}
           </h2>
           <div className="gap-6">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 import { upgradeToAuthor } from "@/lib/api";
 import { useToast } from "@/utils/toast";
@@ -130,27 +131,33 @@ export default function BecomeAuthorPage() {
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
       encType="multipart/form-data"
-      className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-xl mt-10 space-y-6"
+      className="max-w-3xl mx-auto p-10 mt-10 rounded-xl bg-[#FFFBF5] border border-[#6E5D4E] shadow-[0px_2px_5px_rgba(0,0,0,0.05)] space-y-6"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <h1 className="text-3xl font-semibold text-center">Become an Author</h1>
+      <h1 className="text-4xl font-bold text-center font-serif text-[#3D2C1F]">
+        Become an Author
+      </h1>
 
-      {/* Avatar Upload */}
       <div
-        className={`space-y-2 p-2 ${
-          form.error.avatar && "border border-red-500"
+        className={`space-y-2 ${
+          form.error.avatar ? "border border-[#C05746] p-2" : "p-2"
         }`}
       >
-        <label className="text-lg font-medium block">Profile Avatar *</label>
+        <label className="block text-lg font-medium text-[#3D2C1F]">
+          Profile Avatar *
+        </label>
         {preview && (
           <Image
             src={preview}
             alt="Avatar Preview"
             width={100}
             height={100}
-            className="rounded-full object-cover"
+            className="rounded-full object-cover border border-[#6E5D4E]"
           />
         )}
         <input
@@ -167,46 +174,50 @@ export default function BecomeAuthorPage() {
               setPreview(URL.createObjectURL(file));
             }
           }}
-          className="file-input"
+          className="block w-full text-sm text-[#3D2C1F] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:border-[#6E5D4E] file:text-sm file:font-semibold file:bg-[#8B735C] file:text-[#FFFBF5] hover:file:bg-[#6B7F6B]"
         />
       </div>
 
-      {/* Bio */}
       <div className="space-y-2 p-2">
-        <label className="block text-lg font-medium">Bio *</label>
+        <label className="block text-lg font-medium text-[#3D2C1F]">
+          Bio *
+        </label>
         <textarea
           rows={4}
           placeholder="Tell us about yourself as a writer (min 50 chars)..."
-          className={`w-full border p-3 rounded-md focus:outline-none ${
-            form.error.bio ? "border-red-500" : "border-gray-300"
+          className={`w-full p-3 rounded-md focus:outline-none text-[#3D2C1F] font-serif ${
+            form.error.bio
+              ? "border border-[#C05746]"
+              : "border border-[#6E5D4E]"
           }`}
           value={form.bio}
           onChange={(e) => handleInputChange("bio", e.target.value)}
           required
         />
-        <div className="text-sm text-right text-gray-500">
+        <div className="text-sm text-right text-[#6E5D4E]">
           {form.bio.trim().length}/1000 characters
         </div>
       </div>
 
-      {/* Expertise */}
       <div
         className={`space-y-2 p-2 ${
-          form.error.expertise && "border border-red-500"
+          form.error.expertise ? "border border-[#C05746]" : ""
         }`}
       >
-        <label className="block text-lg font-medium">Expertise (Max 3) *</label>
+        <label className="block text-lg font-medium text-[#3D2C1F]">
+          Expertise (Max 3) *
+        </label>
         <div className="flex flex-wrap gap-2">
           {presetExpertise.map((tag) => (
             <button
               type="button"
               key={tag}
               onClick={() => toggleExpertise(tag)}
-              className={`px-3 py-1 rounded-full text-sm border ${
+              className={`px-3 py-1 rounded-full text-sm font-sans border border-[#6E5D4E] transition ${
                 form.expertise.includes(tag)
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              } hover:bg-primary hover:text-white transition`}
+                  ? "bg-[#8B735C] text-[#FFFBF5]"
+                  : "bg-[#FFFBF5] text-[#3D2C1F] hover:bg-[#8B735C] hover:text-[#FFFBF5]"
+              }`}
             >
               {tag}
             </button>
@@ -219,12 +230,12 @@ export default function BecomeAuthorPage() {
             maxLength={20}
             value={customTag}
             onChange={(e) => setCustomTag(e.target.value)}
-            className="flex-grow border px-3 py-1 rounded-l-md focus:outline-none"
+            className="flex-grow border border-[#6E5D4E] px-3 py-1 rounded-l-md focus:outline-none text-[#3D2C1F]"
           />
           <button
             type="button"
             onClick={addCustomTag}
-            className="bg-black text-white px-4 py-1 rounded-r-md"
+            className="bg-[#8B735C] text-[#FFFBF5] px-4 py-1 rounded-r-md"
           >
             Add
           </button>
@@ -234,7 +245,7 @@ export default function BecomeAuthorPage() {
             {form.expertise.map((tag) => (
               <span
                 key={tag}
-                className="bg-gray-200 text-sm px-3 py-1 rounded-full"
+                className="bg-[#8B735C] text-[#FFFBF5] text-sm px-3 py-1 rounded-full font-sans"
               >
                 {tag}
               </span>
@@ -243,7 +254,6 @@ export default function BecomeAuthorPage() {
         )}
       </div>
 
-      {/* Optional Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {["website", "twitter", "linkedin"].map((field) => (
           <input
@@ -252,10 +262,10 @@ export default function BecomeAuthorPage() {
             placeholder={`${
               field.charAt(0).toUpperCase() + field.slice(1)
             } (optional)`}
-            className={`border p-2 rounded-md ${
+            className={`border px-3 py-2 rounded-md text-[#3D2C1F] ${
               form.error[field as keyof typeof form.error]
-                ? "border-red-500"
-                : ""
+                ? "border-[#C05746]"
+                : "border-[#6E5D4E]"
             }`}
             value={form[field as keyof AuthorRequestForm] as string}
             onChange={(e) =>
@@ -271,10 +281,10 @@ export default function BecomeAuthorPage() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition"
+        className="w-full bg-[#8B735C] text-[#FFFBF5] py-3 rounded-md hover:bg-[#6B7F6B] transition"
       >
         Submit Author Request
       </button>
-    </form>
+    </motion.form>
   );
 }

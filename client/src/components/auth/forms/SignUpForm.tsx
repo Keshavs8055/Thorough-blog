@@ -1,4 +1,3 @@
-//signupForm.tsx
 "use client";
 
 import Link from "next/link";
@@ -8,6 +7,7 @@ import { FormField } from "./FormField";
 import { redirect } from "next/navigation";
 import { useToast } from "@/utils/toast";
 import { useLogin } from "../hooks/useAuth";
+import { motion } from "framer-motion";
 
 const initialFormState: SignupFormState = {
   name: "",
@@ -29,7 +29,6 @@ export default function SignupForm() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-
     setForm((p) => ({ ...p, image: file }));
   };
 
@@ -44,12 +43,15 @@ export default function SignupForm() {
   };
 
   return (
-    <form
+    <motion.form
       encType="multipart/form-data"
       onSubmit={handleSubmit}
-      className="space-y-6 p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto animate-in fade-in duration-300"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="space-y-6 p-8 bg-[#FFFBF5] border border-[#6E5D4E] shadow-sm rounded-md w-full max-w-md mx-auto"
     >
-      <h2 className="text-2xl font-semibold text-center text-gray-900">
+      <h2 className="text-2xl font-bold text-center font-serif text-[#3D2C1F]">
         Create an Account
       </h2>
 
@@ -81,10 +83,11 @@ export default function SignupForm() {
         value={form.password}
         onChange={handleChange}
       />
+
       <div>
         <label
           htmlFor="image"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium font-sans text-[#3D2C1F] mb-1"
         >
           Avatar Image
         </label>
@@ -93,26 +96,27 @@ export default function SignupForm() {
           name="image"
           accept="image/*"
           onChange={handleImageChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 text-sm focus:outline-none focus:ring-black focus:border-black"
+          className="block w-full border border-[#6E5D4E] bg-white text-sm px-3 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8B735C] focus:border-[#8B735C]"
         />
       </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 font-medium bg-black text-white hover:bg-gray-900 transition-colors duration-200 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2 text-[#FFFBF5] bg-[#8B735C] font-semibold font-sans rounded-md hover:bg-[#6B7F6B] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Creating Account..." : "Sign Up"}
       </button>
 
-      <div className="text-center text-sm text-gray-600">
+      <div className="text-center text-sm text-[#6E5D4E] font-sans">
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-black font-medium hover:underline no-underline"
+          className="text-[#8B735C] font-medium hover:underline"
         >
           Login
         </Link>
       </div>
-    </form>
+    </motion.form>
   );
 }

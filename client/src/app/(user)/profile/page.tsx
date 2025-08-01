@@ -1,190 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { fetchCompleteUserData, userLogout } from "@/lib/api";
-// import { useAuth } from "@/utils/authStore";
-// import { useToast } from "@/utils/toast";
-// import { useRouter } from "next/navigation";
-// import { CompleteUser } from "@/utils/types";
-// import Image from "next/image";
-// import Link from "next/link";
-// import { PlusCircleIcon } from "lucide-react";
-
-// export default function ProfilePage() {
-//   const { user, logout } = useAuth();
-//   const { showToast } = useToast();
-//   const [detailedUser, setDetailedUser] = useState<CompleteUser>();
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     const getUserData = async () => {
-//       if (!user) return;
-
-//       const res = await fetchCompleteUserData(user.id);
-//       if (res?.success) {
-//         setDetailedUser(res.user);
-//       } else {
-//         showToast("Failed to load profile.", "error");
-//       }
-//     };
-
-//     getUserData();
-//   }, [user, showToast]);
-
-//   const handleLogout = async () => {
-//     const res = await userLogout();
-
-//     if (!res.success) {
-//       showToast("Error During Logout", "error");
-//       return;
-//     }
-//     showToast("Logged Out Succesfully!", "success");
-//     logout();
-//   };
-
-//   return (
-//     <div className="flex justify-center items-center px-4 py-16 bg-cover font-serif">
-//       <div className="w-full max-w-4xl bg-white border border-zinc-300 shadow-md rounded-lg p-10">
-//         <div className="mb-10 flex p-5 border-b justify-between items-center">
-//           <h1 className="text-2xl font-bold text-center tracking-widest mb-2 text-zinc-800 drop-shadow-md">
-//             YOUR PROFILE
-//           </h1>
-//           {detailedUser?.isAuthor && (
-//             <Link
-//               href="/new"
-//               className="bg-primary text-white p-2 rounded"
-//             >
-//               <PlusCircleIcon />
-//             </Link>
-//           )}
-//         </div>
-//         {detailedUser ? (
-//           <div className="flex flex-col lg:flex-row gap-8 text-zinc-800">
-//             <div className="flex-shrink-0 self-center lg:self-start">
-//               <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-zinc-400 shadow-sm">
-//                 <Image
-//                   src={detailedUser.avatar || "/avatar-placeholder.png"}
-//                   alt="Profile Picture"
-//                   width={160}
-//                   height={160}
-//                   className="object-cover w-full h-full"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="flex-1 space-y-6">
-//               <div className="space-y-1">
-//                 <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-//                   Personal Information
-//                 </h2>
-//                 <p>
-//                   <span className="text-sm font-semibold text-zinc-600 mr-2">
-//                     Name:
-//                   </span>
-//                   <span className="text-base font-sans text-zinc-900">
-//                     {detailedUser.name}
-//                   </span>
-//                 </p>
-//                 <p>
-//                   <span className="text-sm font-semibold text-zinc-600 mr-2">
-//                     Username:
-//                   </span>
-//                   <span className="text-base font-sans text-zinc-900">
-//                     {detailedUser.username}
-//                   </span>
-//                 </p>
-//                 <p>
-//                   <span className="text-sm font-semibold text-zinc-600 mr-2">
-//                     Email:
-//                   </span>
-//                   <span className="text-base font-sans text-zinc-900">
-//                     {detailedUser.email}
-//                   </span>
-//                 </p>
-//               </div>
-
-//               {detailedUser.isAuthor &&
-//                 detailedUser.authorProfile &&
-//                 detailedUser.role !== "user" && (
-//                   <div>
-//                     <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-//                       Expertise
-//                     </h2>
-//                     <ul className="list-disc list-inside space-y-1 text-zinc-800">
-//                       {detailedUser.authorProfile.expertise.length > 0 ? (
-//                         detailedUser.authorProfile.expertise.map(
-//                           (skill, index) => (
-//                             <li
-//                               key={index}
-//                               className="font-sans"
-//                             >
-//                               {skill}
-//                             </li>
-//                           )
-//                         )
-//                       ) : (
-//                         <li className="italic text-zinc-500">
-//                           No expertise listed
-//                         </li>
-//                       )}
-//                     </ul>
-//                   </div>
-//                 )}
-//               {detailedUser.role === "pending-author" && (
-//                 <p className="text-sm text-zinc-500 italic">
-//                   Your account is currently under review to become an author.
-//                 </p>
-//               )}
-//               {detailedUser.isAuthor &&
-//                 detailedUser.authorProfile &&
-//                 detailedUser.authorProfile.bio && (
-//                   <div>
-//                     <h2 className="text-xl font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-//                       Biography
-//                     </h2>
-//                     <p className="font-sans text-zinc-800 leading-relaxed">
-//                       {detailedUser.authorProfile.bio}
-//                     </p>
-//                   </div>
-//                 )}
-
-//               <div className="flex flex-wrap gap-4 items-end">
-//                 {user?.role === "pending-author" ? (
-//                   <p className="text-sm text-zinc-500 italic">
-//                     You will Be able to edit after confirmation.
-//                   </p>
-//                 ) : (
-//                   <button
-//                     onClick={() => router.push("/editProfile")}
-//                     className="uppercase px-5 py-2 border border-zinc-700 text-zinc-800 rounded hover:bg-zinc-800 hover:text-white transition-all"
-//                   >
-//                     Edit Profile
-//                   </button>
-//                 )}
-//                 <button
-//                   onClick={handleLogout}
-//                   className="uppercase px-5 py-2 border border-red-700 text-red-700 rounded hover:bg-red-700 hover:text-white transition-all"
-//                 >
-//                   Logout
-//                 </button>
-//                 {detailedUser.role === "user" && (
-//                   <span
-//                     onClick={() => router.push("/becomeAnAuthor")}
-//                     className="text-primary rounded hover:underline cursor-pointer transition-all"
-//                   >
-//                     Become an author?
-//                   </span>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         ) : (
-//           <p className="text-center text-zinc-500 italic">Loading profile...</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 "use client";
 
 import { useEffect, useState } from "react";
@@ -194,6 +7,7 @@ import { useToast } from "@/utils/toast";
 import { useRouter } from "next/navigation";
 import { CompleteUser } from "@/utils/types";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { PlusCircleIcon } from "lucide-react";
 
@@ -208,6 +22,8 @@ export default function ProfilePage() {
       if (!user) return;
 
       const res = await fetchCompleteUserData(user.id);
+      console.log(res);
+
       if (res?.success && res.user) {
         setDetailedUser(res.user);
       } else {
@@ -233,22 +49,15 @@ export default function ProfilePage() {
   const renderExpertise = () => {
     const skills = detailedUser?.authorProfile?.expertise;
     return (
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
+      <div className="mt-6">
+        <h2 className="text-xl font-serif font-semibold text-[#3D2C1F] border-b border-[#6E5D4E] pb-1">
           Expertise
         </h2>
-        <ul className="list-disc list-inside space-y-1 text-zinc-800">
+        <ul className="list-disc list-inside space-y-1 text-[#3D2C1F] font-serif leading-relaxed mt-2">
           {skills && skills.length > 0 ? (
-            skills.map((skill, index) => (
-              <li
-                key={index}
-                className="font-sans"
-              >
-                {skill}
-              </li>
-            ))
+            skills.map((skill, index) => <li key={index}>{skill}</li>)
           ) : (
-            <li className="italic text-zinc-500">No expertise listed</li>
+            <li className="italic text-[#8B735C]">No expertise listed</li>
           )}
         </ul>
       </div>
@@ -259,121 +68,142 @@ export default function ProfilePage() {
     const bio = detailedUser?.authorProfile?.bio;
     if (!bio) return null;
     return (
-      <div>
-        <h2 className="text-xl font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
+      <div className="mt-8">
+        <h2 className="text-xl font-serif font-semibold text-[#3D2C1F] border-b border-[#6E5D4E] pb-1">
           Biography
         </h2>
-        <p className="font-sans text-zinc-800 leading-relaxed">{bio}</p>
+        <p className="font-serif text-[#3D2C1F] mt-2 leading-relaxed text-base">
+          {bio}
+        </p>
+      </div>
+    );
+  };
+  const renderLinks = () => {
+    const links = detailedUser?.authorProfile?.socialMedia;
+    if (!links || (!links.website && !links.twitter && !links.linkedin))
+      return null;
+
+    return (
+      <div className="mt-8">
+        <h2 className="text-xl font-serif font-semibold text-[#3D2C1F] border-b border-[#6E5D4E] pb-1">
+          Links
+        </h2>
+        <div className="mt-2 space-y-2 text-[#3D2C1F] font-serif text-sm">
+          {links.website && (
+            <p>
+              <span className="font-semibold">Website:</span>{" "}
+              <Link
+                href={links.website}
+                target="_blank"
+                className="underline text-[#8B735C] hover:text-[#6E5D4E]"
+              >
+                {links.website}
+              </Link>
+            </p>
+          )}
+          {links.linkedin && (
+            <p>
+              <span className="font-semibold">LinkedIn:</span>{" "}
+              <Link
+                href={links.linkedin}
+                target="_blank"
+                className="underline text-[#8B735C] hover:text-[#6E5D4E]"
+              >
+                {links.linkedin}
+              </Link>
+            </p>
+          )}
+          {links.twitter && (
+            <p>
+              <span className="font-semibold">Twitter:</span>{" "}
+              <Link
+                href={links.twitter}
+                target="_blank"
+                className="underline text-[#8B735C] hover:text-[#6E5D4E]"
+              >
+                {links.twitter}
+              </Link>
+            </p>
+          )}
+        </div>
       </div>
     );
   };
 
   const renderActionButtons = () => (
-    <div className="flex flex-wrap gap-4 items-end">
+    <div className="flex flex-wrap gap-4 items-end mt-6">
       {user?.role === "pending-author" ? (
-        <p className="text-sm text-zinc-500 italic">
+        <p className="text-sm text-[#8B735C] italic">
           You will be able to edit after confirmation.
         </p>
       ) : (
         <button
           onClick={() => router.push("/editProfile")}
-          className="uppercase px-5 py-2 border border-zinc-700 text-zinc-800 rounded hover:bg-zinc-800 hover:text-white transition-all"
+          className="px-4 py-2 bg-[#8B735C] text-[#FFFBF5] font-sans uppercase text-sm rounded hover:bg-[#6B7F6B] transition"
         >
           Edit Profile
         </button>
       )}
       <button
         onClick={handleLogout}
-        className="uppercase px-5 py-2 border border-red-700 text-red-700 rounded hover:bg-red-700 hover:text-white transition-all"
+        className="px-4 py-2 border border-[#6E5D4E] text-[#3D2C1F] font-sans text-sm rounded hover:bg-[#FFFBF5] transition"
       >
         Logout
       </button>
-      {detailedUser?.role === "user" && (
-        <span
+      {user?.role === "user" && (
+        <button
           onClick={() => router.push("/becomeAnAuthor")}
-          className="text-primary rounded hover:underline cursor-pointer transition-all"
+          className="px-0 py-0 text-[#8B735C] font-sans uppercase text-sm rounded transition hover:py-2"
         >
           Become an author?
-        </span>
+        </button>
       )}
     </div>
   );
-
-  if (!detailedUser) {
-    return (
-      <div className="flex justify-center items-center px-4 py-16">
-        <p className="text-center text-zinc-500 italic">Loading profile...</p>
-      </div>
-    );
-  }
+  console.log(detailedUser);
 
   return (
-    <div className="flex justify-center items-center px-4 py-16 bg-cover font-serif">
-      <div className="w-full max-w-4xl bg-white border border-zinc-300 shadow-md rounded-lg p-10">
-        <div className="mb-10 flex p-5 border-b justify-between items-center">
-          <h1 className="text-2xl font-bold text-center tracking-widest mb-2 text-zinc-800 drop-shadow-md">
-            YOUR PROFILE
-          </h1>
-          {detailedUser.isAuthor && (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="min-h-screen bg-[#FFFBF5] py-16 px-4 md:px-12"
+    >
+      <div className="max-w-3xl mx-auto border border-[#6E5D4E] rounded p-6 bg-white shadow-sm">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {detailedUser?.avatar && (
+              <Image
+                src={detailedUser.avatar || "/placeholder.png"}
+                alt="Profile picture"
+                width={80}
+                height={80}
+                className="rounded-full border border-[#6E5D4E] filter grayscale"
+              />
+            )}
+            <div>
+              <h1 className="text-2xl font-bold font-serif text-[#3D2C1F]">
+                {detailedUser?.username}
+              </h1>
+              <p className="text-sm font-sans text-[#6E5D4E]">
+                {detailedUser?.email}
+              </p>
+            </div>
+          </div>
+          {detailedUser?.isAuthor ?? (
             <Link
               href="/new"
-              className="bg-primary text-white p-2 rounded"
+              className="text-[#FFFBF5] bg-[#8B735C] p-2 rounded hover:bg-[#6B7F6B] transition"
             >
               <PlusCircleIcon />
             </Link>
           )}
         </div>
-
-        <div className="flex flex-col lg:flex-row gap-8 text-zinc-800">
-          <div className="flex-shrink-0 self-center lg:self-start">
-            <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-zinc-400 shadow-sm">
-              <Image
-                src={detailedUser.avatar || "/avatar-placeholder.png"}
-                alt="Profile Picture"
-                width={160}
-                height={160}
-                className="object-cover w-full h-full"
-              />
-            </div>
-          </div>
-
-          <div className="flex-1 space-y-6">
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-zinc-700 border-b pb-1 border-zinc-300">
-                Personal Information
-              </h2>
-              {["name", "username", "email"].map((field) => {
-                const value = detailedUser[field as keyof CompleteUser];
-                return (
-                  <p key={field}>
-                    <span className="text-sm font-semibold text-zinc-600 mr-2">
-                      {field[0].toUpperCase() + field.slice(1)}:
-                    </span>
-                    <span className="text-base font-sans text-zinc-900">
-                      {typeof value === "string" || typeof value === "number"
-                        ? value
-                        : ""}
-                    </span>
-                  </p>
-                );
-              })}
-            </div>
-
-            {detailedUser.role === "pending-author" && (
-              <p className="text-sm text-zinc-500 italic">
-                Your account is currently under review to become an author.
-              </p>
-            )}
-
-            {detailedUser.isAuthor &&
-              detailedUser.role !== "user" &&
-              renderExpertise()}
-            {detailedUser.isAuthor && renderBio()}
-
-            {renderActionButtons()}
-          </div>
-        </div>
+        {detailedUser?.isAuthor && renderBio()}
+        {detailedUser?.isAuthor && renderExpertise()}
+        {detailedUser?.isAuthor && renderLinks()}
+        {renderActionButtons()}
       </div>
-    </div>
+    </motion.div>
   );
 }

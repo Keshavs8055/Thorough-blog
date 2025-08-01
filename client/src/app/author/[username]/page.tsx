@@ -16,6 +16,8 @@ export default function AuthorPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log(username);
+
     if (!username) return;
 
     const fetchData = async () => {
