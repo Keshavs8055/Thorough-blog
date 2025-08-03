@@ -2,26 +2,25 @@ import { Request, Response } from "express";
 import Post from "../../models/post";
 import { generateTagsFromContent } from "../../utils/generateTags";
 import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/globalResponse";
+import { InferResponse, CreatePostResponse } from "../../global_types";
+import { AppError } from "../../utils/appError";
 
 export const createPost = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
 
   if (!user) {
-    return res.status(401).json({ success: false, error: "Unauthorized" });
+    throw new AppError("Unauthorized", 401);
   }
 
   const { title, body, date, summary } = req.body;
 
   if (!title || !body) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Title and body are required" });
+    throw new AppError("Title and body are required", 400);
   }
 
-  // Image is uploaded via multer -> Cloudinary and available at req.file.path
   const imageUrl = req.file?.path || "";
 
-  // Optional: Use AI/NLP to generate tags from the content
   const fullContent = `${title}. ${body}`;
   const tags = await generateTagsFromContent(fullContent);
 
@@ -43,9 +42,24 @@ export const createPost = catchAsync(async (req: Request, res: Response) => {
 
   await newPost.save();
 
-  return res.status(201).json({
+  const response: InferResponse<CreatePostResponse["data"]> = {
     success: true,
     message: "Post created successfully",
-    data: newPost,
+    data: {
+      _id: newPost._id.toString(),
+      title: newPost.title,
+      body: newPost.body,
+      image: newPost.image,
+      tags: newPost.tags,
+      author: newPost.author,
+      date: newPost.date,
+      summary: newPost.summary,
+    },
+  };
+
+  return sendResponse({
+    res,
+    statusCode: 201,
+    ...response,
   });
 });

@@ -1,52 +1,70 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { buildCompleteUserResponse } from "../../utils/userUtils";
+import {
+  CompleteUserResponse,
+  EditUserProfileBody,
+  InferResponse,
+  SocialMediaLinks,
+} from "../../global_types";
+import { IAuthor } from "../../global_types";
+import UserSchema from "../../models/UserModel";
+import { sendResponse } from "../../utils/globalResponse";
+import { AppError } from "../../utils/appError";
 
 export const editUserProfile = catchAsync(
-  async (req: Request, res: Response) => {
+  async (
+    req: Request<{}, {}, EditUserProfileBody>,
+    res: Response<InferResponse<CompleteUserResponse["data"]>>
+  ) => {
     const user = req.user;
-    const rawBody = JSON.parse(JSON.stringify(req.body));
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized request.",
-      });
+      throw new AppError("User not authenticated", 401);
     }
 
-    // Handle uploaded avatar
-    const avatarFile = req.file as Express.Multer.File;
-    const avatarUrl = avatarFile ? (avatarFile as any).path : user.avatar;
+    const { name, authorProfile = {} } = req.body;
+    const avatarFile = req.file as Express.Multer.File | undefined;
+    const avatarUrl = avatarFile?.path || user.avatar;
 
-    // Extract and validate incoming authorProfile fields
-    const { authorProfile = {} } = rawBody;
-    const { bio = "", expertise = [], socialMedia = {} } = authorProfile;
+    const updatedExpertise = Array.isArray(authorProfile.expertise)
+      ? authorProfile.expertise.filter(Boolean)
+      : [];
 
-    const updatedExpertise = Array.isArray(expertise) ? expertise : [expertise];
-
-    const updatedSocialMedia = {
-      website: socialMedia.website || "",
-      twitter: socialMedia.twitter || "",
-      linkedin: socialMedia.linkedin || "",
+    const updatedSocialMedia: SocialMediaLinks = {
+      website: authorProfile.socialMedia?.website || "",
+      twitter: authorProfile.socialMedia?.twitter || "",
+      linkedin: authorProfile.socialMedia?.linkedin || "",
     };
 
-    // Apply updates
-    user.avatar = avatarUrl;
-    user.authorProfile = {
-      ...user.authorProfile,
-      bio,
+    const updatedAuthorProfile: IAuthor = {
+      bio: authorProfile.bio || "",
       expertise: updatedExpertise,
       socialMedia: updatedSocialMedia,
     };
-    if (user.name !== rawBody.name) {
-      user.name = rawBody.name;
-    }
-    await user.save();
 
-    return res.status(200).json({
-      success: true,
+    const updatedUser = await UserSchema.findByIdAndUpdate(
+      user._id,
+      {
+        name: name || user.name,
+        avatar: avatarUrl,
+        authorProfile: updatedAuthorProfile,
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new AppError("User not found or update failed", 404);
+    }
+    const response: InferResponse<CompleteUserResponse["data"]> = {
       message: "Profile updated successfully.",
-      user: buildCompleteUserResponse(user),
+      success: true,
+      data: { user: buildCompleteUserResponse(updatedUser) },
+    };
+    return sendResponse({
+      res,
+      statusCode: 200,
+      ...response,
     });
   }
 );

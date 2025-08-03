@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IPost } from "../types";
+import { IPost } from "../global_types";
 
 const PostSchema = new Schema<IPost>(
   {
@@ -28,13 +28,6 @@ const PostSchema = new Schema<IPost>(
       ],
       default: [],
     },
-
-    relatedArticles: [
-      {
-        title: { type: String },
-        href: { type: String },
-      },
-    ],
   },
   {
     timestamps: true,

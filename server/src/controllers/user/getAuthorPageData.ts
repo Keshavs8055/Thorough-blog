@@ -2,45 +2,46 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import User from "../../models/UserModel";
 import Post from "../../models/post";
+import { sendResponse } from "../../utils/globalResponse";
+import { CompleteAuthorResponse, InferResponse } from "../../global_types";
+import { AppError } from "../../utils/appError";
 
 export const getAuthorPageData = catchAsync(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response<InferResponse<any>>) => {
     const { username } = req.params;
 
-    if (!username) {
-      return res.status(400).json({
-        success: false,
-        message: "Author username is required.",
-      });
+    if (!username?.trim()) {
+      throw new AppError("Username is required.", 400);
     }
 
-    // Find user by username
     const user = await User.findOne({ username }).select(
       "username name avatar authorProfile role isAuthor"
     );
 
     if (!user || !user.isAuthor || !user.authorProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Author profile not found.",
-      });
+      throw new AppError("Author not found or not an author.", 404);
     }
-    console.log(user);
 
-    // Fetch published posts by this author
     const posts = await Post.find({ "author.username": user.username })
-      .select("_id image title author date summary likeCount tags") // Return limited post info
+      .select("_id image title author date summary likeCount tags")
       .sort({ createdAt: -1 });
-    res.status(200).json({
+    const response: InferResponse<CompleteAuthorResponse["data"]> = {
       success: true,
       message: "Author page data retrieved successfully.",
-      author: {
-        username: user.username,
-        name: user.name,
-        avatar: user.avatar,
-        authorProfile: user.authorProfile,
+      data: {
+        user: {
+          username: user.username,
+          name: user.name,
+          avatar: user.avatar,
+          authorProfile: user.authorProfile,
+        },
+        posts,
       },
-      posts,
+    };
+    return sendResponse({
+      res,
+      statusCode: 200,
+      ...response,
     });
   }
 );

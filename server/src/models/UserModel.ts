@@ -1,8 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
-import { IUser, userRoles } from "../types";
+import { IUser } from "../global_types";
 
-const UserSchema = new Schema<IUser>(
+interface IUserDocument extends Omit<IUser, "_id">, Document {
+  comparePassword: (password: string) => Promise<boolean>;
+  password: string;
+  isVerified: boolean;
+  verificationToken?: string;
+  verificationTokenExpires: Date;
+  resendCount: number;
+  resendWindowStart: Date;
+}
+
+const UserSchema = new Schema<IUserDocument>(
   {
     name: { type: String, required: true },
     username: { type: String, required: true, unique: true },
@@ -25,9 +35,8 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: Object.values(userRoles),
-      default: userRoles.USER,
-      required: true,
+      enum: ["user", "author", "admin", "pending-author"],
+      default: "user",
     },
     isAuthor: {
       type: Boolean,
@@ -62,4 +71,4 @@ UserSchema.methods.comparePassword = function (candidatePassword: string) {
 };
 
 export default mongoose.models.User ||
-  mongoose.model<IUser>("User", UserSchema);
+  mongoose.model<IUserDocument>("User", UserSchema);

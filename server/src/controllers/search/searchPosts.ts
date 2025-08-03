@@ -1,58 +1,79 @@
 import { Request, Response } from "express";
 import Post from "../../models/post";
 import { catchAsync } from "../../utils/catchAsync";
+import { AppError } from "../../utils/appError";
+import { sendResponse } from "../../utils/globalResponse";
+import { GetPostsResponseAny, InferResponse } from "../../global_types";
 
-export const searchPosts = catchAsync(async (req: Request, res: Response) => {
-  const query = req.query.q as string;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const skip = (page - 1) * limit;
+type SearchQuery = {
+  q?: string;
+  page?: string;
+  limit?: string;
+};
 
-  if (!query) {
-    return res.status(400).json({
-      success: false,
-      message: "Search query is required",
+export const searchPosts = catchAsync(
+  async (
+    req: Request<{}, {}, {}, SearchQuery>,
+    res: Response<InferResponse<GetPostsResponseAny["data"]>>
+  ) => {
+    const { q: query, page = "1", limit = "10" } = req.query;
+
+    if (!query?.trim()) {
+      throw new AppError("Search query is required", 400);
+    }
+
+    const pageNum = Math.max(parseInt(page), 1);
+    const limitNum = Math.max(parseInt(limit), 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    const textSearch = { $text: { $search: query } };
+    const fallbackSearch = {
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { summary: { $regex: query, $options: "i" } },
+        { tags: { $regex: query, $options: "i" } },
+      ],
+    };
+
+    let posts = await Post.find(textSearch)
+      .select("title summary image author _id date likeCount tags")
+      .sort({ score: { $meta: "textScore" } })
+      .skip(skip)
+      .limit(limitNum);
+
+    let totalPosts = await Post.countDocuments(textSearch);
+
+    // If no posts found using text index, fallback to regex
+    if (posts.length === 0) {
+      posts = await Post.find(fallbackSearch)
+        .select("title summary image author _id date likeCount tags")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum);
+
+      totalPosts = await Post.countDocuments(fallbackSearch);
+    }
+
+    const totalPages = Math.ceil(totalPosts / limitNum);
+
+    const response: InferResponse<GetPostsResponseAny["data"]> = {
+      success: true,
+      message:
+        posts.length === 0
+          ? "No posts matched your search"
+          : "Search completed successfully",
+      data: {
+        posts,
+        currentPage: pageNum,
+        totalPages,
+        totalPosts,
+      },
+    };
+
+    return sendResponse({
+      res,
+      statusCode: 200,
+      ...response,
     });
   }
-
-  // Define primary and fallback queries
-  const textQuery = { $text: { $search: query } };
-  const fallbackQuery = {
-    $or: [
-      { title: { $regex: query, $options: "i" } },
-      { summary: { $regex: query, $options: "i" } },
-      { tags: { $regex: query, $options: "i" } },
-    ],
-  };
-
-  // Try text search first
-  let posts = await Post.find(textQuery)
-    .select("title summary image author _id date likeCount tags")
-    .sort({ score: { $meta: "textScore" } })
-    .skip(skip)
-    .limit(limit);
-
-  let total = await Post.countDocuments(textQuery);
-
-  // If no results, fall back to regex search
-  if (posts.length === 0) {
-    posts = await Post.find(fallbackQuery)
-      .select("title summary image author _id date likeCount tags")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    total = await Post.countDocuments(fallbackQuery);
-  }
-
-  const totalPages = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    message: "Search completed successfully",
-    posts,
-    currentPage: page,
-    totalPages,
-    totalResults: total,
-  });
-});
+);

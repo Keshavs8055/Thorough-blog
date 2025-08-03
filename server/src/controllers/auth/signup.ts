@@ -5,7 +5,10 @@ import { generateToken } from "../../utils/auth/jwtUtils";
 import { generateVerificationToken } from "../../utils/auth/tokenUtils";
 import { buildUserResponse } from "../../utils/userUtils";
 import sendVerificationEmail from "../../utils/auth/sendVerifyMail";
-import { userRoles } from "../../types";
+import { AppError } from "../../utils/appError";
+import { sendResponse } from "../../utils/globalResponse";
+import { InferResponse, RoleTypes, userRoles } from "../../global_types";
+import { CompleteUserResponse } from "../../global_types";
 
 export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
   const {
@@ -19,13 +22,14 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     linkedin,
     expertise,
   } = req.body;
+
   const isAuthor = req.body.isAuthor || false;
 
   if (!name || !username || !email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "All fields (name, username, email, password) are required.",
-    });
+    throw new AppError(
+      "All fields (name, username, email, password) are required.",
+      400
+    );
   }
 
   const existingUser = await User.findOne({
@@ -33,25 +37,24 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
   });
 
   if (existingUser) {
-    return res.status(400).json({
-      success: false,
-      message: "An account with that email or username already exists.",
-    });
+    throw new AppError(
+      "An account with that email or username already exists.",
+      400
+    );
   }
 
-  // Handle avatar image (if uploaded)
   const avatarFile = req.file as Express.Multer.File;
   const avatar = avatarFile
     ? {
-        url: (avatarFile as any).path, // Cloudinary URL
+        url: (avatarFile as any).path,
         label: username,
       }
     : undefined;
 
   const { rawToken, hashed, expiresAt } = generateVerificationToken();
 
-  let userRole: userRoles = userRoles.USER;
-  if (isAuthor) userRole = userRoles.PENDING;
+  let userRole: RoleTypes = userRoles.USER;
+  if (isAuthor) userRole = userRoles.PENDING_AUTHOR;
 
   const newUser = await User.create({
     name,
@@ -63,7 +66,7 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     isVerified: false,
     role: userRole,
     isAuthor,
-    avatar: avatar?.url, // for non-authors
+    avatar: avatar?.url,
     ...(isAuthor && {
       authorProfile: {
         bio,
@@ -83,19 +86,26 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     await sendVerificationEmail(email, verificationLink);
   } catch {
     await User.findByIdAndDelete(newUser._id);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to send verification email. Please try again later.",
-    });
+    throw new AppError(
+      "Failed to send verification email. Please try again later.",
+      500
+    );
   }
 
   const token = generateToken(newUser._id.toString());
 
-  return res.status(201).json({
+  const response: InferResponse<CompleteUserResponse["data"]> = {
     success: true,
     message:
       "Signup successful! Please check your email to verify your account.",
-    user: buildUserResponse(newUser),
-    token,
+    data: {
+      user: buildUserResponse(newUser),
+    },
+  };
+
+  return sendResponse({
+    res,
+    statusCode: 201,
+    ...response,
   });
 });

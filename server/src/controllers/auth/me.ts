@@ -1,9 +1,9 @@
+// controllers/userController.ts
 import { catchAsync } from "../../utils/catchAsync";
-import {
-  buildCompleteUserResponse,
-  buildUserResponse,
-} from "../../utils/userUtils";
-import { IUser } from "../../types";
+import { buildUserResponse } from "../../utils/userUtils";
+import { sendResponse } from "../../utils/globalResponse";
+import { buildCompleteUserResponse } from "../../utils/userUtils";
+import { CompleteUserResponse, InferResponse } from "../../global_types";
 
 export const getCurrentUser = catchAsync(async (req, res) => {
   const user = req.user;
@@ -15,11 +15,18 @@ export const getCurrentUser = catchAsync(async (req, res) => {
     });
   }
 
-  return res.status(200).json({
+  const response: InferResponse<CompleteUserResponse["data"]> = {
     success: true,
     message: "User authenticated successfully.",
-    user: buildUserResponse(user),
-    token: req.cookies?.token, // Optional: only if frontend needs it again
+    data: {
+      user: buildUserResponse(user), // Ensure _id is a string
+    },
+  };
+
+  return sendResponse({
+    res,
+    statusCode: 200,
+    ...response,
   });
 });
 
@@ -41,17 +48,17 @@ export const getDetailedUserProfile = catchAsync(async (req, res) => {
     });
   }
 
-  const userResponse = buildCompleteUserResponse(user);
-  if (
-    (user.role === "author" || user.role === "pending-author") &&
-    user.authorProfile
-  ) {
-    (userResponse as IUser).authorProfile = user.authorProfile;
-  }
-
-  return res.status(200).json({
+  const response: InferResponse<CompleteUserResponse["data"]> = {
     success: true,
     message: "User profile data retrieved successfully.",
-    user: userResponse,
+    data: {
+      user: buildCompleteUserResponse(user),
+    },
+  };
+
+  return sendResponse({
+    res,
+    statusCode: 200,
+    ...response,
   });
 });

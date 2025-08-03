@@ -5,6 +5,9 @@ import { hashToken } from "../../utils/auth/tokenUtils";
 import { generateToken } from "../../utils/auth/jwtUtils";
 import { buildUserResponse } from "../../utils/userUtils";
 import { createAuthCookie } from "../../utils/auth/cookieUtils";
+import { AppError } from "../../utils/appError";
+import { sendResponse } from "../../utils/globalResponse";
+import { InferResponse, UserAuthenticatedResponse } from "../../global_types";
 
 export const VerifyEmail = catchAsync(async (req: Request, res: Response) => {
   const { token, email } = req.query;
@@ -15,10 +18,7 @@ export const VerifyEmail = catchAsync(async (req: Request, res: Response) => {
     typeof token !== "string" ||
     typeof email !== "string"
   ) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing token or email in verification link.",
-    });
+    throw new AppError("Missing token or email in verification link.", 400);
   }
 
   const hashedToken = hashToken(token);
@@ -30,17 +30,11 @@ export const VerifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid or expired verification token.",
-    });
+    throw new AppError("Invalid or expired verification token.", 400);
   }
 
   if (user.isVerified) {
-    return res.status(400).json({
-      success: false,
-      message: "Email already verified.",
-    });
+    throw new AppError("Email already verified.", 400);
   }
 
   user.isVerified = true;
@@ -53,10 +47,19 @@ export const VerifyEmail = catchAsync(async (req: Request, res: Response) => {
 
   const newToken = generateToken(user._id.toString());
   res.setHeader("Set-Cookie", createAuthCookie(newToken));
-  return res.status(200).json({
+
+  const response: InferResponse<UserAuthenticatedResponse["data"]> = {
     success: true,
     message: "Email verified successfully!",
-    user: buildUserResponse(user),
-    token: newToken,
+    data: {
+      user: buildUserResponse(user),
+      token: newToken,
+    },
+  };
+
+  return sendResponse({
+    res,
+    statusCode: 200,
+    ...response,
   });
 });

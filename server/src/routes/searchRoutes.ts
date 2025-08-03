@@ -1,7 +1,7 @@
 import express from "express";
 import { searchPosts } from "../controllers/search/searchPosts";
 import { searchPostsByTags } from "../controllers/search/searchByTags";
-import { getTags } from "../controllers/post/getTags";
+import { getTags } from "../controllers/search/searchByTags";
 const searchRouter = express.Router();
 
 searchRouter.get("/searchPosts", searchPosts);

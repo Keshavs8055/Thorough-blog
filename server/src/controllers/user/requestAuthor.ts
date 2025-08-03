@@ -1,48 +1,102 @@
 import { Request, Response } from "express";
-import { userRoles } from "../../types";
 import { catchAsync } from "../../utils/catchAsync";
-import { buildCompleteUserResponse } from "../../utils/userUtils";
+import { AppError } from "../../utils/appError";
+import { sendResponse } from "../../utils/globalResponse";
+import UserSchema from "../../models/UserModel";
+import { userRoles } from "../../global_types";
+import {
+  EditUserProfileBody,
+  CompleteAuthorResponse,
+  InferResponse,
+} from "../../global_types";
 
-export const requestAuthor = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-  const rawBody = JSON.parse(JSON.stringify(req.body));
-  if (!user) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid request." });
-  }
+export const requestAuthor = catchAsync(
+  async (
+    req: Request<{}, {}, EditUserProfileBody>,
+    res: Response<InferResponse<CompleteAuthorResponse["data"]>>
+  ) => {
+    const user = req.user;
+    const { authorProfile = {} } = req.body;
 
-  if (user.role !== userRoles.USER) {
-    return res.status(400).json({
-      success: false,
-      message: "You have already requested or are already an author.",
+    if (!user) {
+      throw new AppError("Unauthorized request.", 401);
+    }
+
+    if (user.role !== userRoles.USER) {
+      throw new AppError(
+        "You have already requested or are already an author.",
+        400
+      );
+    }
+
+    const { bio, expertise, socialMedia } = authorProfile;
+    if (!bio?.trim()) {
+      throw new AppError("Bio is required.", 400);
+    }
+
+    if (!Array.isArray(expertise) || expertise.length === 0) {
+      throw new AppError("At least one area of expertise is required.", 400);
+    }
+
+    if (expertise.length > 3) {
+      throw new AppError("You can select a maximum of 3 expertise areas.", 400);
+    }
+    if (!socialMedia || typeof socialMedia !== "object") {
+      throw new AppError("Atleast one social media link is required.", 400);
+    }
+
+    const hasSocialLink =
+      !!socialMedia.website?.trim() ||
+      !!socialMedia.twitter?.trim() ||
+      !!socialMedia.linkedin?.trim();
+
+    if (!hasSocialLink) {
+      throw new AppError("At least one social media link is required.", 400);
+    }
+
+    const avatarFile = req.file as Express.Multer.File;
+    const avatarUrl = avatarFile?.path || user.avatar;
+
+    const updatedUser = await UserSchema.findByIdAndUpdate(
+      user._id,
+      {
+        role: userRoles.PENDING_AUTHOR,
+        avatar: avatarUrl,
+        authorProfile: {
+          bio,
+          expertise: Array.isArray(expertise) ? expertise : [expertise],
+          socialMedia: {
+            website: socialMedia.website || "",
+            twitter: socialMedia.twitter || "",
+            linkedin: socialMedia.linkedin || "",
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      throw new AppError("User not found or update failed.", 500);
+    }
+
+    const response: InferResponse<CompleteAuthorResponse["data"]> = {
+      success: true,
+      message: "Author upgrade request submitted successfully.",
+      data: {
+        user: {
+          username: updatedUser.username,
+          name: updatedUser.name,
+          avatar: updatedUser.avatar,
+          authorProfile: updatedUser.authorProfile,
+        },
+        posts: [],
+      },
+    };
+
+    return sendResponse({
+      res,
+      statusCode: 200,
+      ...response,
     });
   }
-
-  const { bio, expertise } = rawBody.authorProfile;
-
-  // If new avatar file was uploaded, get its cloudinary URL
-  const avatarFile = req.file as Express.Multer.File;
-  const avatarUrl = avatarFile ? (avatarFile as any).path : user.avatar;
-
-  user.role = userRoles.PENDING;
-  user.avatar = avatarUrl || user.avatar;
-  user.authorProfile = {
-    ...user.authorProfile,
-    bio,
-    expertise: Array.isArray(expertise) ? expertise : [expertise],
-    socialMedia: {
-      website: rawBody.authorProfile.socialMedia.website || "",
-      twitter: rawBody.authorProfile.socialMedia.twitter || "",
-      linkedin: rawBody.authorProfile.socialMedia.linkedin || "",
-    },
-  };
-
-  await user.save();
-
-  return res.status(200).json({
-    success: true,
-    message: "Author upgrade request submitted successfully.",
-    user: buildCompleteUserResponse(user),
-  });
-});
+);

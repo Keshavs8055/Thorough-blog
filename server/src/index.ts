@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import AuthRoutes from "./routes/auth";
 import userRoutes from "./routes/userRoutes";
 import searchRoutes from "./routes/searchRoutes";
+import { globalErrorHandler } from "./utils/errorHandler";
 
 const app = express();
 
@@ -36,5 +37,9 @@ app.use("/api/posts", postRoutes);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/search", searchRoutes);
+
+// Ensure globalErrorHandler is used as an error-handling middleware
+app.use(globalErrorHandler);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
