@@ -6,19 +6,26 @@ import { useInfinitePosts } from "@/hooks/infiniteScroll";
 import { PostFeed } from "@/components/Post/Feed";
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { GetPostsResponseAny, PostLite } from "@/utils/globalTypes";
 
 const loadTagResults = async (
   tagQuery: string,
   page: number,
   limit: number
-) => {
-  const data = await searchPostsByTag(tagQuery, page, limit);
-  if (data?.success) {
+): Promise<{ posts: PostLite[]; newPage: number } | null> => {
+  const response: GetPostsResponseAny = await searchPostsByTag(
+    tagQuery,
+    page,
+    limit
+  );
+
+  if (response?.success && Array.isArray(response.data?.posts)) {
     return {
-      posts: data.posts || [],
+      posts: response.data.posts,
       newPage: page + 1,
     };
   }
+
   return null;
 };
 

@@ -1,6 +1,3 @@
-import { Response } from "express";
-import { Schema, Types } from "mongoose";
-
 // User Base types
 export interface IAuthor {
   bio: string;
@@ -26,7 +23,7 @@ export interface IUser {
   isAuthor: boolean;
   isVerified: boolean;
   authorProfile?: IAuthor;
-  _id: string | Types.ObjectId;
+  _id: string;
 }
 export interface SocialMediaLinks {
   website: string;
@@ -36,8 +33,7 @@ export interface SocialMediaLinks {
 export interface EditUserProfileBody {
   name?: string;
   authorProfile?: Partial<IAuthor>;
-  avatar?: Express.Multer.File;
-  username?: string;
+  avatar?: string;
 }
 // AUTH RESPONSE TYPES
 export interface UserLogoutResponse {
@@ -107,7 +103,7 @@ export interface IPost {
     name: string;
   };
   featured: boolean;
-  likes: Types.ObjectId[] | string[];
+  likes: string[];
   likeCount: number;
   body: string[];
   image?: {
@@ -117,7 +113,7 @@ export interface IPost {
   pullQuotes?: string[];
   subheadings?: string[];
   tags: string[];
-  _id: string | Types.ObjectId;
+  _id: string;
   createdAt?: Date;
 }
 

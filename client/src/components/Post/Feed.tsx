@@ -1,9 +1,9 @@
-import { Post } from "@/utils/types";
+import { PostLite } from "@/utils/globalTypes";
 import PostCard from "./PostCard";
 import { motion } from "framer-motion";
 
 interface Props {
-  posts: Post[];
+  posts: PostLite[];
   observerRef: React.RefObject<HTMLDivElement | null>;
 }
 

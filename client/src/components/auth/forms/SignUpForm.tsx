@@ -1,25 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { SignupFormState } from "@/utils/types";
 import { FormField } from "./FormField";
 import { redirect } from "next/navigation";
 import { useToast } from "@/utils/toast";
-import { useLogin } from "../hooks/useAuth";
+import { SignupFormState, useAuthHook } from "../hooks/useAuth";
 import { motion } from "framer-motion";
+import { SmartLink } from "@/components/common/smartLink";
 
 const initialFormState: SignupFormState = {
   name: "",
   username: "",
   email: "",
   password: "",
-  image: null,
+  avatar: null,
 };
 
 export default function SignupForm() {
   const [form, setForm] = useState(initialFormState);
-  const { loading, handleAuth } = useLogin();
+  const { loading, handleSignup } = useAuthHook();
   const { showToast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,12 +28,24 @@ export default function SignupForm() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setForm((p) => ({ ...p, image: file }));
+
+    if (file) {
+      const maxSizeMB = 5;
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+      if (file.size > maxSizeBytes) {
+        showToast(`Avatar image must be less than ${maxSizeMB}MB.`, "error");
+        e.target.value = ""; // Clear the file input
+        return;
+      }
+
+      setForm((p) => ({ ...p, avatar: file }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await handleAuth(form, false);
+    const result = await handleSignup(form);
 
     if (result.success) {
       showToast("Please verify your email before logging in.", "info");
@@ -86,14 +97,14 @@ export default function SignupForm() {
 
       <div>
         <label
-          htmlFor="image"
+          htmlFor="avatar"
           className="block text-sm font-medium font-sans text-[#3D2C1F] mb-1"
         >
           Avatar Image
         </label>
         <input
           type="file"
-          name="image"
+          name="avatar"
           accept="image/*"
           onChange={handleImageChange}
           className="block w-full border border-[#6E5D4E] bg-white text-sm px-3 py-2 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8B735C] focus:border-[#8B735C]"
@@ -110,12 +121,12 @@ export default function SignupForm() {
 
       <div className="text-center text-sm text-[#6E5D4E] font-sans">
         Already have an account?{" "}
-        <Link
+        <SmartLink
           href="/login"
           className="text-[#8B735C] font-medium hover:underline"
         >
           Login
-        </Link>
+        </SmartLink>
       </div>
     </motion.form>
   );

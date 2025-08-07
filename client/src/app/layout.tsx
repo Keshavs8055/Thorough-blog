@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bodyFont.className} bg-gray-100`}
+      className={`${bodyFont.className}`}
     >
       <head>
         <link
@@ -34,7 +34,7 @@ export default function RootLayout({
           sizes="any"
         />
       </head>
-      <body className="text-ink antialiased">
+      <body className="text-ink antialiased bg-[#FFFBF5]">
         <AuthProvider>
           <Navbar />
           <Layout>

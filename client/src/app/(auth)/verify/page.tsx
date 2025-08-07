@@ -20,13 +20,7 @@ export default function VerifyEmailPage() {
 
   const token = searchParams.get("token");
   const email = searchParams.get("email");
-
   useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/");
-      return;
-    }
-
     const verify = async () => {
       if (!token || !email) {
         setStatus("error");
@@ -34,17 +28,28 @@ export default function VerifyEmailPage() {
         return;
       }
 
-      const result = await verifyEmail(token, email);
-      if (result.success && result.user && result.token) {
-        login(result.user);
-        showToast("Email verified successfully!", "success");
-        setStatus("success");
-        setMessage("Redirecting to your dashboard...");
+      try {
+        const result = await verifyEmail(token, email);
 
-        setTimeout(() => router.push("/"), 2000);
-      } else {
+        if (result.success && result.data?.user && result.data?.token) {
+          const { user } = result.data;
+          login(user);
+          showToast("Email verified successfully!", "success");
+
+          setStatus("success");
+          setMessage("Redirecting to your dashboard...");
+
+          setTimeout(() => {
+            router.push("/");
+          }, 2000);
+        } else {
+          setStatus("error");
+          setMessage(result.message || "Verification failed. Try again later.");
+        }
+      } catch (error) {
+        console.error("Verification error:", error);
         setStatus("error");
-        setMessage(result.message || "Verification failed. Try again later.");
+        setMessage("Something went wrong. Please try again later.");
       }
     };
 

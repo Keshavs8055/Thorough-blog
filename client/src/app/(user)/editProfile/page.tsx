@@ -1,5 +1,3 @@
-// Updated EditProfilePage component using vintage newspaper design principles and Framer Motion
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -8,38 +6,47 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/utils/toast";
 import { useAuth } from "@/utils/authStore";
 import { fetchCompleteUserData, updateUserProfile } from "@/lib/api";
-import { CompleteUser, presetExpertise } from "@/utils/types";
 import { Spinner } from "@/components/common/spinner";
 import { motion } from "framer-motion";
+import {
+  IUser,
+  IAuthor,
+  SocialMediaLinks,
+  userRoles,
+} from "@/utils/globalTypes";
 
-export interface UpdateForm extends CompleteUser {
-  newImage?: string | File | null;
+export interface UpdateForm extends IUser {
+  authorProfile: IAuthor;
+  newImage?: File;
 }
 
-const defaultUser: UpdateForm = {
-  id: "",
-  name: "",
-  email: "",
-  username: "",
-  isAuthor: false,
-  role: "user",
-  authorProfile: {
-    bio: "",
-    expertise: [],
-    socialMedia: {
-      website: "",
-      twitter: "",
-      linkedin: "",
-      github: "",
-    },
-  },
-};
+const presetExpertise = ["React", "Node.js", "Next.js", "MongoDB", "AI"];
 
 const EditProfilePage = () => {
   const router = useRouter();
   const { showToast } = useToast();
-  const userId = useAuth((s) => s.user?.id);
-  const [formData, setFormData] = useState<UpdateForm>(defaultUser);
+  const userId = useAuth((s) => s.user?._id);
+
+  const [formData, setFormData] = useState<UpdateForm>({
+    name: "",
+    username: "",
+    email: "",
+    avatar: "",
+    role: userRoles.USER,
+    isAuthor: false,
+    isVerified: false,
+    _id: "",
+    authorProfile: {
+      bio: "",
+      socialMedia: {
+        website: "",
+        linkedin: "",
+        twitter: "",
+      },
+      expertise: [],
+    },
+  });
+
   const [avatar, setAvatar] = useState<{ data: File | null; preview: string }>({
     data: null,
     preview: "",
@@ -51,10 +58,18 @@ const EditProfilePage = () => {
 
     const loadUserData = async () => {
       const res = await fetchCompleteUserData(userId);
-      if (res?.success && res.user) {
-        setFormData(res.user);
-        const ava = res.user.avatar || "";
-        setAvatar((prev) => ({ ...prev, preview: ava }));
+      if (res?.success && res.data?.user) {
+        const user = res.data.user;
+        setFormData((prev) => ({
+          ...prev,
+          ...user,
+          newImage: undefined,
+          authorProfile: {
+            ...prev.authorProfile,
+            ...user.authorProfile,
+          },
+        }));
+        setAvatar((prev) => ({ ...prev, preview: user.avatar || "" }));
       } else {
         showToast("Failed to load profile.", "error");
       }
@@ -67,18 +82,12 @@ const EditProfilePage = () => {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
 
-      if (name === "name" || name === "email" || name === "username") {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
+      if (["name", "email", "username"].includes(name)) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
       } else if (name === "bio") {
         setFormData((prev) => ({
           ...prev,
-          authorProfile: {
-            ...prev.authorProfile,
-            bio: value,
-          },
+          authorProfile: { ...prev.authorProfile, bio: value },
         }));
       }
     },
@@ -86,7 +95,7 @@ const EditProfilePage = () => {
   );
 
   const handleSocialChange = useCallback(
-    (key: keyof UpdateForm["authorProfile"]["socialMedia"]) =>
+    (key: keyof SocialMediaLinks) =>
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setFormData((prev) => ({
@@ -105,9 +114,8 @@ const EditProfilePage = () => {
 
   const handleTagToggle = useCallback((tag: string) => {
     setFormData((prev) => {
-      const expertise = prev.authorProfile.expertise;
-      const exists = expertise.includes(tag);
-      const updated = exists
+      const { expertise } = prev.authorProfile;
+      const updated = expertise.includes(tag)
         ? expertise.filter((t) => t !== tag)
         : expertise.length < 3
         ? [...expertise, tag]
@@ -115,10 +123,7 @@ const EditProfilePage = () => {
 
       return {
         ...prev,
-        authorProfile: {
-          ...prev.authorProfile,
-          expertise: updated,
-        },
+        authorProfile: { ...prev.authorProfile, expertise: updated },
       };
     });
   }, []);
@@ -127,15 +132,16 @@ const EditProfilePage = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       setAvatar({ data: file, preview: URL.createObjectURL(file) });
       setFormData((prev) => ({ ...prev, newImage: file }));
     },
     []
   );
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    debugger;
     try {
       const res = await updateUserProfile(formData);
       if (res?.success) {
@@ -152,7 +158,7 @@ const EditProfilePage = () => {
     }
   };
 
-  if (!formData.id) return <Spinner />;
+  if (!formData._id) return <Spinner />;
 
   return (
     <motion.div
@@ -186,15 +192,16 @@ const EditProfilePage = () => {
           />
         </div>
 
-        {(["name", "email", "username"] as const).map((field) => (
+        {["name", "email", "username"].map((field) => (
           <div key={field}>
             <label className="block font-semibold mb-1 capitalize text-[#3D2C1F]">
-              {field}
+              {field} {field === "email" ? "(cannot be changed)" : ""}
             </label>
             <input
               name={field}
               type="text"
-              value={formData[field]}
+              disabled={field === "email"}
+              value={formData[field as keyof UpdateForm] as string}
               onChange={handleInputChange}
               className="w-full border border-[#6E5D4E] p-2 rounded bg-white text-[#3D2C1F] focus:border-[#8B735C]"
               required
@@ -218,20 +225,17 @@ const EditProfilePage = () => {
             <div>
               <p className="font-semibold">Social Links</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                {(
-                  [
-                    "website",
-                    "github",
-                    "linkedin",
-                    "twitter",
-                  ] as (keyof UpdateForm["authorProfile"]["socialMedia"])[]
-                ).map((key) => (
+                {["website", "github", "linkedin", "twitter"].map((key) => (
                   <input
                     key={key}
                     type="url"
                     placeholder={key}
-                    value={formData.authorProfile.socialMedia[key] ?? ""}
-                    onChange={handleSocialChange(key)}
+                    value={
+                      formData.authorProfile.socialMedia[
+                        key as keyof SocialMediaLinks
+                      ] ?? ""
+                    }
+                    onChange={handleSocialChange(key as keyof SocialMediaLinks)}
                     className="border border-[#6E5D4E] p-2 rounded bg-white focus:border-[#8B735C]"
                   />
                 ))}

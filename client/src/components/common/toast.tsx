@@ -2,7 +2,7 @@
 
 import { useToast } from "@/utils/toast";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import { SmartLink } from "./smartLink";
 
 export default function Toast() {
   const { visible, message, type, link } = useToast();
@@ -42,12 +42,12 @@ export default function Toast() {
           <div className="text-sm leading-relaxed">{message}</div>
           {link && (
             <div className="mt-2">
-              <Link
+              <SmartLink
                 href={`${link.link}`}
                 className="text-[#FFFBF5] underline underline-offset-2 hover:text-[#3D2C1F] transition-colors duration-200"
               >
                 {link.label}
-              </Link>
+              </SmartLink>
             </div>
           )}
         </motion.div>

@@ -2,38 +2,50 @@
 
 import { useEffect, useState } from "react";
 import { getAllTags, searchPostsByTag } from "@/lib/api";
-import { Post } from "@/utils/types";
 import { stripHtmlAndTrim } from "@/lib/utils";
 import { AllTagsComponent } from "@/components/common/displayAllTags";
+import { PostLite } from "@/utils/globalTypes";
 
 export default function AllTagsPage() {
-  const [tagPosts, setTagPosts] = useState<Record<string, Post[]>>({});
+  const [tagPosts, setTagPosts] = useState<Record<string, PostLite[]>>({});
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTag] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTagPosts() {
-      const allData: Record<string, Post[]> = {};
-      for (const tag of tags) {
-        if (!tag) continue;
-        const response = await searchPostsByTag(tag, 1, 10);
-        if (response.success && Array.isArray(response.posts)) {
-          allData[tag] = response.posts;
-        } else {
-          allData[tag] = [];
+    const fetchData = async () => {
+      try {
+        const tagsRes = await getAllTags();
+
+        if (!tagsRes.success || !Array.isArray(tagsRes.data?.tags)) {
+          return;
         }
+
+        const fetchedTags = tagsRes.data.tags;
+        setTags(fetchedTags);
+
+        const tagPostsMap: Record<string, PostLite[]> = {};
+
+        await Promise.all(
+          fetchedTags.map(async (tag) => {
+            if (!tag) return;
+
+            const postRes = await searchPostsByTag(tag, 1, 10);
+            if (postRes.success && Array.isArray(postRes.data?.posts)) {
+              tagPostsMap[tag] = postRes.data.posts;
+            } else {
+              tagPostsMap[tag] = [];
+            }
+          })
+        );
+
+        setTagPosts(tagPostsMap);
+      } catch (error) {
+        console.error("Error fetching tags or posts", error);
       }
-      setTagPosts(allData);
-    }
-    async function fetchAllTags() {
-      const data = await getAllTags();
-      if (data.success && Array.isArray(data.tags)) {
-        setTags(data.tags);
-      }
-    }
-    fetchAllTags();
-    if (tags.length > 0) fetchTagPosts();
-  }, [tags]);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-22 font-serif text-gray-900">

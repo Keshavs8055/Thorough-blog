@@ -9,9 +9,21 @@ import { upgradeToAuthor } from "@/lib/api";
 import { useToast } from "@/utils/toast";
 import { useAuth } from "@/utils/authStore";
 import { useLoading } from "@/utils/loading";
-import { AuthorRequestForm, presetExpertise } from "@/utils/types";
 
-const defaultForm: AuthorRequestForm = {
+export interface AuthorRequestForm {
+  bio: string;
+  avatar: File | string | null;
+  website?: string;
+  twitter?: string;
+  linkedin?: string;
+  expertise: string[];
+}
+
+type AuthorFormErrors = {
+  [K in keyof AuthorRequestForm]: boolean;
+};
+
+const defaultForm: AuthorRequestForm & { error: AuthorFormErrors } = {
   bio: "",
   avatar: null,
   expertise: [],
@@ -19,8 +31,8 @@ const defaultForm: AuthorRequestForm = {
   twitter: "",
   linkedin: "",
   error: {
-    avatar: false,
     bio: false,
+    avatar: false,
     expertise: false,
     website: false,
     twitter: false,
@@ -28,20 +40,25 @@ const defaultForm: AuthorRequestForm = {
   },
 };
 
+const presetExpertise = ["Tech", "AI", "JavaScript", "Design", "Startup"];
+
 export default function BecomeAuthorPage() {
   const showToast = useToast((state) => state.showToast);
   const user = useAuth((state) => state.user);
   const router = useRouter();
   const { isLoading, setLoading } = useLoading();
 
-  const [form, setForm] = useState<AuthorRequestForm>(defaultForm);
+  const [form, setForm] = useState<typeof defaultForm>(defaultForm);
   const [preview, setPreview] = useState<string | null>(null);
   const [customTag, setCustomTag] = useState("");
 
   useEffect(() => {
     if (user?.avatar) {
       setPreview(user.avatar);
-      setForm((prev) => ({ ...prev, avatar: user.avatar }));
+      setForm((prev) => ({
+        ...prev,
+        avatar: typeof user.avatar === "string" ? user.avatar : null,
+      }));
     }
   }, [user?.avatar]);
 
@@ -84,10 +101,10 @@ export default function BecomeAuthorPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const errors = {
+    const errors: AuthorFormErrors = {
       avatar: !form.avatar && !preview,
       bio: form.bio.trim().length < 50,
       expertise: form.expertise.length < 1,
@@ -105,8 +122,9 @@ export default function BecomeAuthorPage() {
     }
 
     setLoading(true);
+    const { ...formData } = form;
+    const response = await upgradeToAuthor(formData);
 
-    const response = await upgradeToAuthor(form);
     showToast(
       response.success
         ? "Request to become an author is sent."

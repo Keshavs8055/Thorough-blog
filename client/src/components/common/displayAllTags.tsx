@@ -12,9 +12,9 @@ export const AllTagsComponent = ({ allTags }: { allTags: string[] }) => {
   useEffect(() => {
     if (tags.length > 0) return;
     getAllTags().then((data) => {
-      if (data.success && Array.isArray(data.tags)) {
+      if (data.success && Array.isArray(data.data.tags)) {
         const uniqueTags = Array.from(
-          new Set(data.tags.filter((t: string) => t && t.trim()))
+          new Set(data.data.tags.filter((t: string) => t && t.trim()))
         );
         setTags(uniqueTags);
       }

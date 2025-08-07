@@ -23,7 +23,6 @@ export const requireAuth = async (
     req.user = user;
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
     throw new AppError("Unauthorized. Invalid or expired token.", 401);
   }
 };

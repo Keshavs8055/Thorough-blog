@@ -7,6 +7,8 @@ import { buildUserResponse } from "../../utils/userUtils";
 import { AppError } from "../../utils/appError";
 import { sendResponse } from "../../utils/globalResponse";
 import { InferResponse, UserAuthenticatedResponse } from "../../global_types";
+import sendVerificationEmail from "../../utils/auth/sendVerifyMail";
+import { generateVerificationToken } from "../../utils/auth/tokenUtils";
 
 export const UserLogin = catchAsync(async (req, res) => {
   const { email, password } = req.body;
@@ -21,6 +23,13 @@ export const UserLogin = catchAsync(async (req, res) => {
   if (!isMatch) throw new AppError("Incorrect password.", 401);
 
   if (!user.isVerified) {
+    const { rawToken, hashed, expiresAt } = generateVerificationToken();
+    User.updateOne(
+      { _id: user._id },
+      { verificationToken: hashed, verificationTokenExpires: expiresAt }
+    );
+    const verificationLink = `${process.env.CLIENT_URL}/verify?token=${rawToken}&email=${email}`;
+    sendVerificationEmail(user.email, verificationLink);
     throw new AppError("Account not verified. Please check your email.", 403);
   }
 

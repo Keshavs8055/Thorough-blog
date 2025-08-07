@@ -1,14 +1,13 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import User from "../../models/UserModel";
-import { generateToken } from "../../utils/auth/jwtUtils";
-import { generateVerificationToken } from "../../utils/auth/tokenUtils";
 import { buildUserResponse } from "../../utils/userUtils";
 import sendVerificationEmail from "../../utils/auth/sendVerifyMail";
 import { AppError } from "../../utils/appError";
 import { sendResponse } from "../../utils/globalResponse";
 import { InferResponse, RoleTypes, userRoles } from "../../global_types";
 import { CompleteUserResponse } from "../../global_types";
+import { generateVerificationToken } from "../../utils/auth/tokenUtils";
 
 export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
   const {
@@ -32,18 +31,25 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
     );
   }
 
-  const existingUser = await User.findOne({
-    $or: [{ email: email.toLowerCase() }, { username }],
+  const existingEmail = await User.findOne({
+    email: email.toLowerCase(),
   });
-
-  if (existingUser) {
-    throw new AppError(
-      "An account with that email or username already exists.",
-      400
-    );
+  if (existingEmail) {
+    throw new AppError("An account with that email already exists.", 400);
+  }
+  const existingUsername = await User.findOne({
+    username: username.toLowerCase(),
+  });
+  if (existingUsername) {
+    throw new AppError("An account with that username already exists.", 400);
   }
 
   const avatarFile = req.file as Express.Multer.File;
+
+  if (req.file && !avatarFile) {
+    throw new AppError("File is not valid.", 400);
+  }
+
   const avatar = avatarFile
     ? {
         url: (avatarFile as any).path,
@@ -91,8 +97,6 @@ export const UserSignUp = catchAsync(async (req: Request, res: Response) => {
       500
     );
   }
-
-  const token = generateToken(newUser._id.toString());
 
   const response: InferResponse<CompleteUserResponse["data"]> = {
     success: true,

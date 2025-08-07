@@ -30,7 +30,8 @@ mongoose.connect(process.env.MONGO_URI || "").then(() => {
 // Routes
 app.use("/test", (req, res) => {
   res.json({
-    status: "working",
+    success: true,
+    message: "Server is running",
   });
 });
 app.use("/api/posts", postRoutes);

@@ -1,5 +1,6 @@
 // utils/sendVerificationEmail.ts
 import nodemailer from "nodemailer";
+import { AppError } from "../appError";
 
 const sendVerificationEmail = async (email: string, link: string) => {
   const transporter = nodemailer.createTransport({
@@ -36,7 +37,7 @@ const sendVerificationEmail = async (email: string, link: string) => {
       </a>
     </div>
 
-    <p style="font-size: 14px; line-height: 1.5; color: #555;">
+    <p style="font-size: 14px; color: #555; max-width: 500px; margin: auto; text-align: center;">
       If the button doesn't work, you can also paste this link in your browser:<br/>
       <a href="${link}" style="color: #333; text-decoration: underline;">${link}</a>
     </p>
@@ -50,8 +51,7 @@ const sendVerificationEmail = async (email: string, link: string) => {
     });
   } catch (error) {
     console.error("Error sending verification email:", error);
-    // Handle the error appropriately (e.g., throw an error, log to a file, etc.)
-    throw new Error("Failed to send verification email."); // Or handle differently
+    throw new AppError("Failed to send verification email."); // Or handle differently
   }
 };
 

@@ -21,8 +21,25 @@ function uploadMiddleware(folderName: string) {
 
   return multer({
     storage: storage,
-    limits: {
-      fileSize: 5 * 1024 * 1024, // keep images size < 5 MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /^(jpeg|png|jpg)$/;
+      const extname =
+        file.originalname.endsWith(".jpeg") ||
+        file.originalname.endsWith(".png") ||
+        file.originalname.endsWith(".jpg");
+      const mimetype = allowedTypes.test(file.mimetype.split("/")[1]);
+
+      if (mimetype && extname) {
+        cb(null, true);
+      } else {
+        cb(
+          new multer.MulterError(
+            "LIMIT_UNEXPECTED_FILE",
+            "Only images are allowed!"
+          )
+        );
+      }
     },
   });
 }

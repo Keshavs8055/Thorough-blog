@@ -1,12 +1,12 @@
 "use client";
 
 import { stripHtmlAndTrim } from "@/lib/utils";
-import { Post } from "@/utils/types";
+import { PostLite } from "@/utils/globalTypes";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
+import { SmartLink } from "../common/smartLink";
 
-export default function PostCard({ post }: { post: Post }) {
+export default function PostCard({ post }: { post: PostLite }) {
   const { _id, image, title, author, date, summary, likeCount, tags } = post;
 
   return (
@@ -55,9 +55,7 @@ export default function PostCard({ post }: { post: Post }) {
               {author.name}
             </a>{" "}
             &nbsp;•&nbsp;{" "}
-            <span className="font-mono text-xs tracking-wide">
-              {new Date(date).toLocaleDateString()}
-            </span>
+            <span className="font-mono text-xs tracking-wide">{date}</span>
           </div>
 
           {/* Summary */}
@@ -89,15 +87,14 @@ export default function PostCard({ post }: { post: Post }) {
       {(tags?.length > 0 || likeCount > 0) && (
         <div className="pt-4 mt-4 border-t border-dashed border-[#6E5D4E] flex flex-wrap justify-between items-center text-sm">
           <div className="flex flex-wrap gap-2">
-            {tags?.map((tag) => (
-              <Link
+            {tags?.map((tag: string) => (
+              <SmartLink
                 key={tag}
                 href={`/posts/tags?q=${encodeURIComponent(tag)}`}
                 className="px-3 py-1 rounded-full text-[#FFFBF5] bg-[#8B735C] text-xs hover:bg-[#6B7F6B] transition"
-                style={{ fontFamily: "'Lato', sans-serif" }}
               >
                 #{tag}
-              </Link>
+              </SmartLink>
             ))}
           </div>
           <div className="text-[#6E5D4E] font-semibold">{likeCount} ❤</div>

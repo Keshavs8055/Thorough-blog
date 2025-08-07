@@ -1,40 +1,34 @@
 // app/posts/[id]/page.tsx
-import SinglePost from "@/components/Post/SinglePost";
+"use client";
 import { fetchPostById } from "@/lib/api";
-import { redirect } from "next/navigation";
-import { Metadata } from "next";
+import SinglePost from "@/components/Post/SinglePost";
+import { redirect, useParams } from "next/navigation";
+import { GetPostByIdResponse, IPost } from "@/utils/globalTypes"; // Adjust import path as needed
+import { useEffect, useState } from "react";
+import Loading from "@/components/common/loading";
 
-type Props = {
-  params: { id: string };
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const response = await fetchPostById(params.id);
-
-  if (!response.success || !response.data) {
-    return {
-      title: "Post Not Found - Thorough",
-      description: "Post may have been removed or doesn't exist.",
+export default function PostPage() {
+  const params = useParams<{ id: string }>();
+  const [data, setData] = useState<IPost | null>(null);
+  useEffect(() => {
+    if (!params.id) {
+      redirect("/");
+    }
+    const handleFetchPost = async () => {
+      const response: GetPostByIdResponse = await fetchPostById(params.id);
+      if (!response.success || !response.data) {
+        redirect("/");
+      }
+      setData(response.data);
     };
-  }
 
-  return {
-    title: `${response.data.title} - Thorough`,
-    description: response.data.summary || "Read the blog post.",
-  };
-}
+    handleFetchPost();
+  }, [params.id]);
 
-export default async function PostPage({ params }: Props) {
-  const response = await fetchPostById(params.id);
-
-  if (!response.success || !response.data) {
-    console.error("Failed to fetch post:", response.message);
-    redirect("/");
-  }
-
+  if (!data) return <Loading />;
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
-      <SinglePost post={response.data} />
+      <SinglePost post={data} />
     </main>
   );
 }

@@ -20,8 +20,6 @@ export const getPostsByTags = catchAsync(
     req: Request<{}, {}, {}, TagsQuery>,
     res: Response<InferResponse<GetPostsResponseAny["data"]>>
   ) => {
-    console.log(req.query);
-
     const { tags: tagsParam, limit = "10", page = "1", excludeId } = req.query;
 
     if (!tagsParam?.trim()) {
@@ -39,7 +37,6 @@ export const getPostsByTags = catchAsync(
 
     if (excludeId?.trim()) {
       if (!mongoose.Types.ObjectId.isValid(excludeId)) {
-        console.warn("Invalid excludeId passed:", excludeId);
         throw new AppError("Invalid excludeId provided", 400);
       }
 

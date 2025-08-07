@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Post } from "@/utils/types";
+import { PostLite } from "@/utils/globalTypes";
 import { useToast } from "@/utils/toast";
 
 interface UseInfinitePostsProps {
@@ -8,7 +8,7 @@ interface UseInfinitePostsProps {
     query: string,
     page: number,
     limit: number
-  ) => Promise<{ posts: Post[]; newPage?: number } | null>;
+  ) => Promise<{ posts: PostLite[]; newPage?: number } | null>;
   limit?: number;
 }
 
@@ -17,7 +17,7 @@ export const useInfinitePosts = ({
   fetchFn,
   limit = 6,
 }: UseInfinitePostsProps) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostLite[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);

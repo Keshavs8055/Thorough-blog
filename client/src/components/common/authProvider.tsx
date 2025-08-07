@@ -14,8 +14,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const result = await fetchUser();
 
-        if (result.success && result.user) {
-          login(result.user); // token is optional
+        if (result.success && result.data.user) {
+          login(result.data.user);
         }
       } catch (e) {
         console.log(e);

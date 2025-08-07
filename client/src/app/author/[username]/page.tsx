@@ -3,94 +3,99 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 
-import { fetchAuthorPageData, ApiResponse } from "@/lib/api";
-import { Post } from "@/utils/types";
+import { fetchAuthorPageData } from "@/lib/api";
 import PostCard from "@/components/Post/PostCard";
+import {
+  CompleteAuthorResponse,
+  PostLite,
+  SocialMediaLinks,
+} from "@/utils/globalTypes";
+import { SmartLink } from "@/components/common/smartLink";
 
 export default function AuthorPage() {
   const { username } = useParams();
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [data, setData] = useState<CompleteAuthorResponse["data"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log(username);
-
     if (!username) return;
 
-    const fetchData = async () => {
+    const fetchAuthorData = async () => {
+      setLoading(true);
       try {
-        const result = await fetchAuthorPageData(username as string);
-        if (result.success && result.author) {
-          setData(result);
+        const response = await fetchAuthorPageData(username as string);
+
+        if (response.success && response.data?.user) {
+          setData(response.data);
           setError(null);
         } else {
-          setError(result.message || "Failed to fetch author data.");
+          setError(response.message || "Failed to fetch author data.");
         }
-      } catch (err) {
+      } catch (error) {
+        console.error("Error fetching author data:", error);
         setError("Something went wrong fetching author data.");
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchAuthorData();
   }, [username]);
 
   if (loading) return <p className="p-8">Loading author page...</p>;
-  if (error) return <p className="text-red-500 p-8">{error}</p>;
-  if (!data || !data.author)
+  if (error) return <p className="text-red-500 text-center p-8">{error}</p>;
+  if (!data || !data.user)
     return <p className="p-8 text-center">No author found.</p>;
 
-  const { author, posts } = data;
+  const { user, posts } = data;
+  const authorProfile = user.authorProfile;
 
   const renderSocialLinks = () => {
-    const socials = author.authorProfile?.socialMedia;
+    const socials: SocialMediaLinks | undefined = authorProfile?.socialMedia;
     if (!socials) return null;
 
     return (
       <div className="flex flex-wrap gap-3 mt-4 text-sm">
         {socials.website && (
-          <Link
+          <SmartLink
             href={socials.website}
             target="_blank"
             className="text-blue-600 hover:underline"
           >
             Website
-          </Link>
+          </SmartLink>
         )}
         {socials.twitter && (
-          <Link
+          <SmartLink
             href={`https://twitter.com/${socials.twitter}`}
             target="_blank"
             className="text-blue-500 hover:underline"
           >
             Twitter
-          </Link>
+          </SmartLink>
         )}
         {socials.linkedin && (
-          <Link
+          <SmartLink
             href={socials.linkedin}
             target="_blank"
             className="text-blue-700 hover:underline"
           >
             LinkedIn
-          </Link>
+          </SmartLink>
         )}
       </div>
     );
   };
 
   const renderExpertiseTags = () => {
-    const tags = author.authorProfile?.expertise;
+    const tags: string[] | undefined = authorProfile?.expertise;
     if (!tags?.length) return null;
 
     return (
       <div className="mt-4 flex flex-wrap gap-2">
-        {tags.map((topic) => (
+        {tags.map((topic: string) => (
           <span
             key={topic}
             className="px-2 py-1 text-xs bg-neutral-100 rounded-full border border-neutral-300"
@@ -108,8 +113,8 @@ export default function AuthorPage() {
       <section className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10 border-b pb-6">
         <div className="w-28 h-28 rounded-full overflow-hidden border border-neutral-400">
           <Image
-            src={author.avatar}
-            alt={author.name}
+            src={user.avatar || "/default-avatar.png"}
+            alt={user.name}
             width={112}
             height={112}
             className="object-cover w-full h-full"
@@ -117,12 +122,12 @@ export default function AuthorPage() {
         </div>
 
         <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold tracking-tight">{author.name}</h1>
-          <p className="text-sm text-neutral-500">@{author.username}</p>
+          <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
+          <p className="text-sm text-neutral-500">@{user.username}</p>
 
-          {author.authorProfile?.bio && (
+          {authorProfile?.bio && (
             <p className="mt-2 text-neutral-700 max-w-prose">
-              {author.authorProfile.bio}
+              {authorProfile.bio}
             </p>
           )}
 
@@ -136,7 +141,7 @@ export default function AuthorPage() {
         <h2 className="text-xl font-semibold mb-6">Published Posts</h2>
 
         {posts?.length ? (
-          posts.map((post: Post) => (
+          posts.map((post: PostLite) => (
             <PostCard
               key={post._id}
               post={post}

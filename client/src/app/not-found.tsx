@@ -1,8 +1,7 @@
 "use client";
-
-import Link from "next/link";
 import { Newspaper } from "lucide-react";
 import { motion } from "framer-motion";
+import { SmartLink } from "@/components/common/smartLink";
 
 export default function NotFound() {
   return (
@@ -43,12 +42,12 @@ export default function NotFound() {
             whileHover={{ scale: 1.03 }}
             transition={{ type: "spring", stiffness: 200 }}
           >
-            <Link
+            <SmartLink
               href="/"
               className="mt-6 inline-block px-5 py-2 border border-[#6E5D4E] text-[#FFFBF5] bg-[#8B735C] hover:bg-[#6B7F6B] transition-colors duration-200 rounded text-sm tracking-wider font-sans uppercase"
             >
               Return to Home 🏠
-            </Link>
+            </SmartLink>
           </motion.div>
         </div>
 

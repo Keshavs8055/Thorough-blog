@@ -1,12 +1,12 @@
 import { create } from "zustand";
-import { CompleteUser } from "@/utils/types";
+import { IUser } from "@/utils/globalTypes";
 
 type AuthState = {
   isLoggedIn: boolean;
-  user: CompleteUser | null;
-  login: (user: CompleteUser) => void;
+  user: IUser | null;
+  login: (user: IUser) => void;
   logout: () => void;
-  setUser: (user: CompleteUser) => void;
+  setUser: (user: IUser) => void;
 };
 
 export const useAuth = create<AuthState>((set) => ({

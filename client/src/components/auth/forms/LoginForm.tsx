@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { LoginFormState } from "@/utils/types";
-import { FormField } from "./FormField"; // Adjust path if needed
-import { useLogin } from "../hooks/useAuth";
+import { FormField } from "./FormField";
+import { LoginFormState, useAuthHook } from "../hooks/useAuth";
+import { UserAuthenticatedResponse } from "../../../utils/globalTypes";
+import { SmartLink } from "@/components/common/smartLink";
 
 const initialFormState: LoginFormState = {
   email: "",
@@ -13,9 +13,9 @@ const initialFormState: LoginFormState = {
 };
 
 export default function LoginForm() {
-  const [form, setForm] = useState(initialFormState);
+  const [form, setForm] = useState<LoginFormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
-  const { loading, handleAuth } = useLogin();
+  const { loading, handleLogin } = useAuthHook();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,9 +25,9 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await handleAuth(form, true);
+    const res: UserAuthenticatedResponse = await handleLogin(form);
     if (!res.success) {
-      setError("Unexpected Error Occurred");
+      setError(res.message || "Unexpected Error Occurred");
     }
   };
 
@@ -72,7 +72,7 @@ export default function LoginForm() {
         {loading ? "Logging in..." : "Login"}
       </button>
 
-      <Link
+      <SmartLink
         href="/signup"
         className="block no-underline"
       >
@@ -82,7 +82,7 @@ export default function LoginForm() {
         >
           Don&apos;t have an account? Sign Up
         </button>
-      </Link>
+      </SmartLink>
     </motion.form>
   );
 }

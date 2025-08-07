@@ -7,14 +7,28 @@ import { useEffect } from "react";
 import { useLoading } from "@/utils/loading";
 
 const loadPosts = async (_: string, page: number, limit: number) => {
-  const data = await fetchPosts(page, limit);
-  if (data?.success) {
+  try {
+    const response = await fetchPosts(page, limit);
+
+    if (response.success && response.data?.posts) {
+      return {
+        posts: response.data.posts,
+        newPage: page + 1,
+      };
+    }
+
     return {
-      posts: data.posts || [],
-      newPage: page + 1,
+      posts: [],
+      newPage: page, // don’t increment if fetch failed
+    };
+  } catch (error) {
+    console.log(error);
+
+    return {
+      posts: [],
+      newPage: page,
     };
   }
-  return null;
 };
 
 export default function HomePage() {

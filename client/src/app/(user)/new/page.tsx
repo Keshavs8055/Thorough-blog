@@ -105,9 +105,11 @@ export default function NewPostPage() {
     }
     return true;
   };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
     const formData = new FormData();
@@ -115,21 +117,26 @@ export default function NewPostPage() {
     formData.append("body", body);
     formData.append("date", new Date().toISOString());
     formData.append("summary", body.slice(0, 700));
-    if (form.image) formData.append("image", form.image);
+
+    if (form.image) {
+      formData.append("image", form.image);
+    }
 
     setLoading(true);
+
     try {
-      const res = await createPost(formData);
-      if (res.success && res.data) {
+      const response = await createPost(formData);
+
+      if (response?.success && response.data?._id) {
         showToast("Post created successfully!", "success");
         localStorage.removeItem(DRAFT_KEY);
-        router.push(`/posts/${res.data._id}`);
+        router.push(`/posts/${response.data._id}`);
       } else {
-        showToast("Failed to create post.", "error");
+        showToast(response?.message || "Failed to create post.", "error");
       }
-    } catch (err) {
-      console.error(err);
-      showToast("Error creating post.", "error");
+    } catch (error) {
+      console.error("Create post error:", error);
+      showToast("Unexpected error while creating post.", "error");
     } finally {
       setLoading(false);
     }

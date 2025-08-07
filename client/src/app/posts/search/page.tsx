@@ -2,6 +2,7 @@
 import { PostFeed } from "@/components/Post/Feed";
 import { useInfinitePosts } from "@/hooks/infiniteScroll";
 import { searchPosts } from "@/lib/api";
+import { GetPostsResponseAny, PostLite } from "@/utils/globalTypes";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -14,17 +15,18 @@ export default function SearchPage() {
     query: string,
     page: number,
     limit: number
-  ) => {
-    const data = await searchPosts(query, page, limit);
-    if (data?.success) {
+  ): Promise<{ posts: PostLite[]; newPage: number } | null> => {
+    const response: GetPostsResponseAny = await searchPosts(query, page, limit);
+
+    if (response?.success && Array.isArray(response.data?.posts)) {
       return {
-        posts: data.posts || [],
+        posts: response.data.posts,
         newPage: page + 1,
       };
     }
+
     return null;
   };
-
   const { posts, observerRef, reset } = useInfinitePosts({
     query,
     fetchFn: loadSearchResults,

@@ -18,7 +18,7 @@ userRoutes.post(
   "/upgrade",
   requireAuth,
   requireVerified,
-  upload.single("image"),
+  upload.single("avatar"),
   requestAuthor
 );
 

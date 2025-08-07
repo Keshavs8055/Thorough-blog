@@ -23,7 +23,17 @@ export const editUserProfile = catchAsync(
       throw new AppError("User not authenticated", 401);
     }
 
-    const { name, authorProfile = {} } = req.body;
+    const { username, name, authorProfile = {} } = req.body;
+    // Make sure username is unique if provided
+    if (username) {
+      const existingUser = await UserSchema.findOne({
+        username: username.toLowerCase(),
+      });
+      if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+        throw new AppError("Username already taken", 400);
+      }
+    }
+
     const avatarFile = req.file as Express.Multer.File | undefined;
     const avatarUrl = avatarFile?.path || user.avatar;
 
@@ -49,6 +59,7 @@ export const editUserProfile = catchAsync(
         name: name || user.name,
         avatar: avatarUrl,
         authorProfile: updatedAuthorProfile,
+        username: username || user.username,
       },
       { new: true }
     );

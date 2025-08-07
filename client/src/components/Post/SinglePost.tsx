@@ -2,14 +2,14 @@
 import { likePost } from "@/lib/api";
 import { useAuth } from "@/utils/authStore";
 import { useToast } from "@/utils/toast";
-import { Post } from "@/utils/types";
+import { IPost } from "@/utils/globalTypes";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { SmartLink } from "../common/smartLink";
 
-export default function SinglePost({ post }: { post: Post }) {
+export default function SinglePost({ post }: { post: IPost }) {
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [liked, setLiked] = useState(false);
   const user = useAuth((state) => state.user);
@@ -17,7 +17,7 @@ export default function SinglePost({ post }: { post: Post }) {
   const { showToast } = useToast();
 
   useEffect(() => {
-    if (user && post.likes?.includes(user.id)) {
+    if (user && post.likes?.includes(user._id)) {
       setLiked(true);
     }
   }, [user, post.likes]);
@@ -35,8 +35,8 @@ export default function SinglePost({ post }: { post: Post }) {
 
     try {
       const res = await likePost(post._id);
-      if (res.success && res.likes !== undefined) {
-        setLikeCount(res.likes);
+      if (res.success && res.data.likes !== undefined) {
+        setLikeCount(res.data.likes);
         setLiked((prev) => !prev);
       }
     } catch (err) {
@@ -59,36 +59,28 @@ export default function SinglePost({ post }: { post: Post }) {
         >
           {post.title}
         </h1>
-        <p className="text-sm text-center text-[#6E5D4E] italic mt-2">
+        <div className="text-sm text-center text-[#6E5D4E] italic mt-2">
           By{" "}
-          <Link
+          <SmartLink
             href={`/author/${post.author.username}`}
             className="hover:underline text-[#8B735C]"
           >
             {post.author.name}
-          </Link>{" "}
+          </SmartLink>{" "}
           • {new Date(post.date).toLocaleDateString()}
-        </p>
+        </div>
       </header>
 
-      {post.image && (
-        <figure className="my-6">
+      {post.image?.src && (
+        <div className="m-auto h-auto">
           <Image
             src={post.image.src}
             alt={post.image.alt}
-            width={700}
-            height={100}
-            className="w-full object-cover rounded border border-[#6E5D4E] filter sepia"
+            width={800}
+            height={600}
+            className=" grayscale hover:grayscale-0 transition duration-300 border border-[#6E5D4E]"
           />
-          {post.image.caption && (
-            <figcaption className="text-sm italic text-center mt-2 text-[#6E5D4E]">
-              {post.image.caption}{" "}
-              {post.image.source && (
-                <span className="text-xs">({post.image.source})</span>
-              )}
-            </figcaption>
-          )}
-        </figure>
+        </div>
       )}
 
       {post.body.map((htmlString: string, i: number) => (
@@ -129,12 +121,12 @@ export default function SinglePost({ post }: { post: Post }) {
             <ul className="space-y-2">
               {post.relatedArticles.map((rel, i) => (
                 <li key={i}>
-                  <Link
+                  <SmartLink
                     href={rel.href}
                     className="text-[#8B735C] hover:underline"
                   >
                     {rel.title}
-                  </Link>
+                  </SmartLink>
                 </li>
               ))}
             </ul>
@@ -147,12 +139,12 @@ export default function SinglePost({ post }: { post: Post }) {
           >
             Author
           </h3>
-          <Link
+          <SmartLink
             href={`/author/${post.author.username}`}
             className="text-[#8B735C] hover:underline"
           >
             @{post.author.name}
-          </Link>
+          </SmartLink>
         </div>
       </div>
 
@@ -166,14 +158,14 @@ export default function SinglePost({ post }: { post: Post }) {
               Tags
             </h4>
             <ul className="flex flex-wrap gap-2">
-              {post.tags.map((tag, i) => (
+              {post.tags.map((tag: string, i: number) => (
                 <li key={i}>
-                  <Link
+                  <SmartLink
                     href={`/tags/${tag}`}
                     className="bg-[#8B735C] text-[#FFFBF5] px-3 py-1 rounded-full text-sm hover:bg-[#6B7F6B] transition-all duration-150"
                   >
                     {tag}
-                  </Link>
+                  </SmartLink>
                 </li>
               ))}
             </ul>
